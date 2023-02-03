@@ -36,25 +36,42 @@ module.example = function()
   uv.run()
 end
 
+-- TODO having a module.client won't work for multiple nREPL connections, maybe we will need a collection of
+-- connections for clj and cljs to connect at the same time?
 module.open_example = function()
   local uv = vim.loop
-  local client = uv.new_tcp()
-  local connection = uv.tcp_connect(client, "127.0.0.1", 52216, function (err)
+  -- local client = uv.new_tcp()
+  module.client = uv.new_tcp()
+  local connection = uv.tcp_connect(module.client, "127.0.0.1", 52216, function (err)
     assert(not err, err)
   end)
 
-  client:write("d2:op5:clonee")
-  client:read_start(function (err, chunk)
+  module.client:write("d2:op5:clonee")
+  module.client:read_start(function (err, chunk)
     assert(not err, err)
 
     if chunk then
       print("got message back")
       print(chunk)
+      -- this will always try to get a session id
+      -- assumes session-id will always be 36 characters long
+      module.id = vim.split(chunk, ":")[3]:sub(0, 36)
+      print(module.id)
     else
-      client:shutdown()
-      client:close()
+      module.client:shutdown()
+      module.client:close()
     end
   end)
+end
+
+module.message = function(id, session, code)
+  local msg = string.format("d4:code%s:%s2:id%s:%s2:op4:eval7:session%s:%se", string.len(code), code, string.len(id), id, string.len(session), session)
+  print(msg)
+  module.client:write(msg)
+end
+
+module.clone = function()
+  module.client:write("d2:op5:clonee")
 end
 
 module.setup = function()
@@ -63,6 +80,8 @@ module.setup = function()
   -- cmd("Connect" 'echo "Hello world!"', {})
   -- vim.api.nvim_create_user_command("Connect", 'echo "Hello world!"', {})
   vim.api.nvim_create_user_command("Connect", module.open_example, {})
+  vim.api.nvim_create_user_command("Clone", module.clone, {})
+  vim.api.nvim_create_user_command("Message", function () module.message("test", module.id, "(+ 40 2)") end, {})
   return
 end
 
