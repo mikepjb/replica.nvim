@@ -1,4 +1,4 @@
-# Replica.nvim
+## replica.nvim
 
 Yet another REPL interaction plugin for neovim.
 
@@ -14,6 +14,7 @@ Written in Lua, this project aims to be:
 
 For lisp editing see `vim-sexp` or the sister project for Replica: `parengage.nvim`
 
-# Special thanks
+## Special thanks
 
-Thank you octo.nvim for being a great reference for writing lua based neovim plugins!
+- Thank you octo.nvim for being a great reference for writing lua based neovim plugins!
+- Thank you also to the neovim team for nice documentation, especially on the vim.loop/libuv integration!
