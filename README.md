@@ -14,6 +14,11 @@ Written in Lua, this project aims to be:
 
 For lisp editing see `vim-sexp` or the sister project for Replica: `parengage.nvim`
 
+## Testing
+
+`make test` though make sure you have `plenary.nvim` installed next to this project (e.g both in the same src folder
+`src/replica.nvim` and `src/plenary.nvim`
+
 ## Special thanks
 
 - Thank you octo.nvim for being a great reference for writing lua based neovim plugins!

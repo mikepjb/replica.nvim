@@ -1,0 +1,6 @@
+*replica.nvim.txt*        For NVIM v0.8.0        Last change: 2023 February 03
+
+==============================================================================
+
+replica.nvim is a Clojure REPL client plugin, that allows you to interact with
+a clojure REPL from within neovim.
