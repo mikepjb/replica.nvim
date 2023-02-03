@@ -4,7 +4,7 @@ local module = {}
 
 module.setup = function(config)
   if not vim.fn.has "nvim-0.7" then
-    utils.error "octo.nvim requires neovim 0.7+"
+    utils.error "replica.nvim requires neovim 0.7+"
     return
   end
 
