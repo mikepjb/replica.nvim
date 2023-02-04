@@ -38,6 +38,7 @@ end
 
 -- TODO having a module.client won't work for multiple nREPL connections, maybe we will need a collection of
 -- connections for clj and cljs to connect at the same time?
+-- XXX answer: I think we have a single TCP connection and grab 2 sessions?
 module.open_example = function()
   local uv = vim.loop
   -- local client = uv.new_tcp()
