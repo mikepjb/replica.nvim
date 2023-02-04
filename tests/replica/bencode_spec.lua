@@ -12,6 +12,25 @@ describe("replica", function()
     it("encodes a single string", function()
       assert.equals(require("replica.bencode").encode("Hello, nREPL!"), "13:Hello, nREPL!")
     end)
+
+    it("encodes an array of strings", function()
+      -- In Lua, an array is a table of integer index values e.g 1 => "thing", 2 => "next'
+      -- Oh yeah, also it's 1-indexed
+      local example_array = {"this", "is", "an", "array"}
+      local expected_encoding = "l4:this2:is2:an5:arraye"
+      assert.equals(require("replica.bencode").encode(example_array), expected_encoding)
+    end)
+
+    it("encodes an dictionary of strings", function()
+      -- In Lua, an array is a table of integer index values e.g 1 => "thing", 2 => "next'
+      -- Oh yeah, also it's 1-indexed
+      local example_dictionary = {}
+      example_dictionary["code"] = "(+ 40 2)"
+      example_dictionary["session"] = "sample"
+
+      local expected_encoding = "d7:session6:sample4:code8:(+ 40 2)e"
+      assert.equals(require("replica.bencode").encode(example_dictionary), expected_encoding)
+    end)
   end)
 
   describe("errors when given an unknown message type", function()
