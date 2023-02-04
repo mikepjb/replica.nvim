@@ -4,8 +4,13 @@ describe("replica", function()
   end)
 
   describe("encoding messages into bencode format", function()
+    -- not necessary? I think clojure nREPL only deals with strings/lists/maps
     it("encodes a single integer", function()
-      assert.equals(require("replica.bencode").encode(5), "i am a number")
+      assert.equals(require("replica.bencode").encode(5), "i5e")
+    end)
+
+    it("encodes a single string", function()
+      assert.equals(require("replica.bencode").encode("Hello, nREPL!"), "13:Hello, nREPL!")
     end)
   end)
 
