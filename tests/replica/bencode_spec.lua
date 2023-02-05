@@ -91,6 +91,27 @@ describe("replica", function()
       )
     end)
 
+    it("decodes a multiple key/pair dictionary", function()
+      assert.are.same(
+        {require("replica.bencode").decode("d2:op5:clone4:code8:(+ 40 2)e")},
+        {{op="clone", code="(+ 40 2)"}, 30}
+      )
+    end)
+
+    it("decodes a list", function()
+      assert.are.same(
+        {require("replica.bencode").decode("l2:op5:clone4:code8:(+ 40 2)e")},
+        {{"op", "clone", "code", "(+ 40 2)"}, 30}
+      )
+    end)
+
+    it("decodes a list, inside a dictionary", function()
+      assert.are.same(
+        {require("replica.bencode").decode("l2:op5:clone4:codel8:(+ 40 2)11:second codeee")},
+        {{"op", "clone", "code", {"(+ 40 2)", "second code"}}, 46}
+      )
+    end)
+
     -- it("decodes a string", function()
     --   assert.equals(require("replica.bencode").decode("5:clone"), "clone")
     -- end)

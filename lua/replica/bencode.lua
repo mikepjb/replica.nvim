@@ -58,7 +58,17 @@ module.type_decoders = {
   end,
   list = function(m, i)
     local i = i + 1 -- skip 'l'
-    return nil, "unknown type", m
+    local t = {}
+
+    while sub(m, i, i) ~= "e" do
+      local e, ev
+      e, i, ev = module.decode(m, i)
+      if not e then return e, i, ev end
+      insert(t, e)
+    end
+
+    index = i + 1 -- skip 'e'
+    return t, index
   end,
   dictionary = function(m, i)
     local i = i + 1 -- skip 'd'
