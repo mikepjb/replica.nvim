@@ -53,16 +53,26 @@ end
 
 module.type_decoders = {
   integer = function(m, i)
+    local i = i + 1
     return nil, "unknown type", m
   end,
   list = function(m, i)
+    local i = i + 1
     return nil, "unknown type", m
   end,
   dictionary = function(m, i)
+    local i = i + 1
     return nil, "unknown type", m
   end,
   string = function(m, i)
-    return nil, "unknown type", m
+    local a, b, length = find(m, "^([0-9]+):", i)
+    if not length then return nil, "no length detected", length end
+    local index = b + 1
+
+    local value = sub(m, index, index + length -1)
+    if #value < length - 1 then return nil, "truncated string at end of input", value end
+    index = index + length
+    return value, index
   end,
   unknown = function(m, i)
     return nil, "unknown type", m
@@ -81,7 +91,7 @@ module.decode = function(message, index)
   if len(next_char) == 0 then return nil, "truncation error", nil end
   if not next_char then return nil, "truncation error", nil end
 
-  return module.type_decoders[module.detect_type(next_char)](message, index + 1)
+  return module.type_decoders[module.detect_type(next_char)](message, index)
 end
 
 return module

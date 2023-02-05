@@ -63,6 +63,27 @@ describe("replica", function()
       )
     end)
 
+    it("avoids parsing strings without length", function()
+      assert.are.same(
+        {require("replica.bencode").type_decoders["string"](":clone")},
+        {nil, "no length detected", nil}
+      )
+    end)
+
+    it("detects strings", function()
+      assert.are.same(
+        {require("replica.bencode").decode("5:clone")},
+        {"clone", 8}
+      )
+    end)
+
+    it("detects incomplete strings", function()
+      assert.are.same(
+        {require("replica.bencode").decode("7:clone")},
+        {nil, "truncated string at end of input", "clone"}
+      )
+    end)
+
     -- it("decodes a string", function()
     --   assert.equals(require("replica.bencode").decode("5:clone"), "clone")
     -- end)
