@@ -53,16 +53,31 @@ end
 
 module.type_decoders = {
   integer = function(m, i)
-    local i = i + 1
+    local i = i + 1 -- skip 'i'
     return nil, "unknown type", m
   end,
   list = function(m, i)
-    local i = i + 1
+    local i = i + 1 -- skip 'l'
     return nil, "unknown type", m
   end,
   dictionary = function(m, i)
-    local i = i + 1
-    return nil, "unknown type", m
+    local i = i + 1 -- skip 'd'
+    local t = {}
+
+    while sub(m, i, i) ~= "e" do
+      local key, value, ev
+
+      key, i, ev = module.decode(m, i)
+      if not key then return key, i, ev end
+
+      value, i, ev = module.decode(m, i)
+      if not value then return value, i, ev end
+
+      t[key] = value
+    end
+
+    i = i + 1 -- skip closing 'e'
+    return t, i
   end,
   string = function(m, i)
     local a, b, length = find(m, "^([0-9]+):", i)

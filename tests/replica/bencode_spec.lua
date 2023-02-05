@@ -84,15 +84,15 @@ describe("replica", function()
       )
     end)
 
+    it("decodes a simple single key/pair dictionary", function()
+      assert.are.same(
+        {require("replica.bencode").decode("d2:op5:clonee")},
+        {{op="clone"}, 14}
+      )
+    end)
+
     -- it("decodes a string", function()
     --   assert.equals(require("replica.bencode").decode("5:clone"), "clone")
-    -- end)
-
-    -- it("decodes a string, returning the remaining message", function()
-    --   assert.are.same(
-    --     require("replica.bencode").decode_int("5:clone3:eye"),
-    --     { value="clone", remaining_message="3:eye" }
-    --   )
     -- end)
 
     -- it("decodes a list with a single element", function()
@@ -101,10 +101,6 @@ describe("replica", function()
 
     -- it("decodes a list with two elements", function()
     --   assert.equals(require("replica.bencode").decode("l5:clone3:eyee"), {"clone", "eye"})
-    -- end)
-
-    -- it("decodes a simple single key/pair dictionary", function()
-    --   assert.equals(require("replica.bencode").decode("d2op:5clonee"), {op="clone"})
     -- end)
   end)
 end)
