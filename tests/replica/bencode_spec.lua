@@ -48,9 +48,28 @@ describe("replica", function()
   end)
 
   describe("decoding messages into bencode format", function()
-    it("decodes a string", function()
-      assert.equals(require("replica.bencode").decode("5:clone"), "clone")
+    it("refuses to decode empty messages", function()
+      assert.are.same({require("replica.bencode").decode()}, {nil, "no data", nil})
     end)
+
+    -- it("decodes a string", function()
+    --   assert.equals(require("replica.bencode").decode("5:clone"), "clone")
+    -- end)
+
+    -- it("decodes a string, returning the remaining message", function()
+    --   assert.are.same(
+    --     require("replica.bencode").decode_int("5:clone3:eye"),
+    --     { value="clone", remaining_message="3:eye" }
+    --   )
+    -- end)
+
+    -- it("decodes a list with a single element", function()
+    --   assert.equals(require("replica.bencode").decode("l5:clonee"), {"clone"})
+    -- end)
+
+    -- it("decodes a list with two elements", function()
+    --   assert.equals(require("replica.bencode").decode("l5:clone3:eyee"), {"clone", "eye"})
+    -- end)
 
     -- it("decodes a simple single key/pair dictionary", function()
     --   assert.equals(require("replica.bencode").decode("d2op:5clonee"), {op="clone"})
