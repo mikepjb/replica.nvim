@@ -1,3 +1,5 @@
+local bencode = require("replica.bencode")
+
 local module = {}
 
 -- Learning for nREPL
@@ -47,7 +49,7 @@ module.open_example = function()
     assert(not err, err)
   end)
 
-  module.client:write("d2:op5:clonee")
+  module.client:write(bencode.encode({op="clone"}))
   module.client:read_start(function (err, chunk)
     assert(not err, err)
 

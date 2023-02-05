@@ -24,12 +24,17 @@ describe("replica", function()
     it("encodes an dictionary of strings", function()
       -- In Lua, an array is a table of integer index values e.g 1 => "thing", 2 => "next'
       -- Oh yeah, also it's 1-indexed
+      -- Also, it's order is non-deterministic.
       local example_dictionary = {}
       example_dictionary["code"] = "(+ 40 2)"
       example_dictionary["session"] = "sample"
 
       local expected_encoding = "d7:session6:sample4:code8:(+ 40 2)e"
-      assert.equals(require("replica.bencode").encode(example_dictionary), expected_encoding)
+      local expected_alt_order_encoding = "d4:code8:(+ 40 2)7:session6:samplee"
+      local encoded_dictionary = require("replica.bencode").encode(example_dictionary)
+      assert.is_true(
+        encoded_dictionary == expected_encoding or encoded_dictionary == expected_alt_order_encoding
+      )
     end)
   end)
 
@@ -40,5 +45,15 @@ describe("replica", function()
         "not sure what to do with message type: nil"
       )
     end)
+  end)
+
+  describe("decoding messages into bencode format", function()
+    it("decodes a string", function()
+      assert.equals(require("replica.bencode").decode("5:clone"), "clone")
+    end)
+
+    -- it("decodes a simple single key/pair dictionary", function()
+    --   assert.equals(require("replica.bencode").decode("d2op:5clonee"), {op="clone"})
+    -- end)
   end)
 end)
