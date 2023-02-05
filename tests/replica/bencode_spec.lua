@@ -52,6 +52,17 @@ describe("replica", function()
       assert.are.same({require("replica.bencode").decode()}, {nil, "no data", nil})
     end)
 
+    it("detects reading beyond message length", function()
+      assert.are.same({require("replica.bencode").decode("a", 3)}, {nil, "truncation error", nil})
+    end)
+
+    it("detects unknown types", function()
+      assert.are.same(
+        {require("replica.bencode").decode("asfsdafasdf", 3)},
+        {nil, "unknown type", "asfsdafasdf"}
+      )
+    end)
+
     -- it("decodes a string", function()
     --   assert.equals(require("replica.bencode").decode("5:clone"), "clone")
     -- end)
