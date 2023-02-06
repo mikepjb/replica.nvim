@@ -33,6 +33,8 @@ module.namespace = function(filepath)
     a, b, _ = find(filepath_no_ext, "^.*src/cljs/", 0)
   elseif find(filepath_no_ext, "src/cljc/") then
     a, b, _ = find(filepath_no_ext, "^.*src/cljc/", 0)
+  elseif find(filepath_no_ext, "dev/") then
+    a, b, _ = find(filepath_no_ext, "^.*dev/", 0)
   else
     a, b, _ = find(filepath_no_ext, "^.*src/", 0)
   end

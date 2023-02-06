@@ -7,4 +7,5 @@
                        cider/cider-nrepl {:mvn/version "0.28.5"}}
           :main-opts ["-m" "nrepl.cmdline"
                       "--middleware" "[cider.nrepl/cider-middleware]"]}
-           :figwheel {:extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.18"}}}}}
+           :figwheel {:extra-paths ["tests/cljs"]
+                      :extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.18"}}}}}

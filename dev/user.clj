@@ -7,7 +7,7 @@
     {:id "dev"
      :options {:output-to "target/public/cljs-out/main.js"
                :main 'replica.core}
-     :config {:watch-dirs ["test/cljs"]
+     :config {:watch-dirs ["tests/cljs"]
               :open-url false
               :mode :serve}}))
 
