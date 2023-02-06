@@ -13,8 +13,7 @@ local session_id
 local id = "replica.client"
 local partial_chunks = nil
 
--- TODO should be an internal function, exposed for testing
-module.clone = function()
+clone = function()
   tcp_client:write(encode({op="clone"}))
 end
 
@@ -54,10 +53,9 @@ module.connect = function(host, port)
     assert(not err, err)
   end)
 
-  module.clone()
+  clone()
   tcp_client:read_start(function(err, chunk)
     assert(not err, err)
-    -- TODO is this actually a chunk? what happens if a large message is sent to us?
     if chunk then
       read(chunk)
     else
@@ -69,8 +67,8 @@ module.connect = function(host, port)
   uv.run()
 end
 
-module.eval = function(code)
-  tcp_client:write(encode({id=id, op="eval", code=code, session=session_id}))
+module.eval = function(ns, code)
+  tcp_client:write(encode({id=id, ns=ns, op="eval", code=code, session=session_id}))
 end
 
 return module
