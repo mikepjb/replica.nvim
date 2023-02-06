@@ -54,7 +54,11 @@ end
 module.type_decoders = {
   integer = function(m, i)
     local i = i + 1 -- skip 'i'
-    return nil, "unknown type", m
+    local a, b, int = find(m, "^(%-?%d+)e", i)
+    if not int then return nil, "not a number", nil end
+    local int = tonumber(int)
+    if not int then return nil, "not a number", nil end
+    return int, b + 1
   end,
   list = function(m, i)
     local i = i + 1 -- skip 'l'

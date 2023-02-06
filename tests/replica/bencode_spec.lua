@@ -70,6 +70,13 @@ describe("replica", function()
       )
     end)
 
+    it("detects integers", function()
+      assert.are.same(
+        {require("replica.bencode").decode("i567e")},
+        {567, 6}
+      )
+    end)
+
     it("detects strings", function()
       assert.are.same(
         {require("replica.bencode").decode("5:clone")},
@@ -111,17 +118,5 @@ describe("replica", function()
         {{"op", "clone", "code", {"(+ 40 2)", "second code"}}, 46}
       )
     end)
-
-    -- it("decodes a string", function()
-    --   assert.equals(require("replica.bencode").decode("5:clone"), "clone")
-    -- end)
-
-    -- it("decodes a list with a single element", function()
-    --   assert.equals(require("replica.bencode").decode("l5:clonee"), {"clone"})
-    -- end)
-
-    -- it("decodes a list with two elements", function()
-    --   assert.equals(require("replica.bencode").decode("l5:clone3:eyee"), {"clone", "eye"})
-    -- end)
   end)
 end)
