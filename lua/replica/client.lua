@@ -87,7 +87,10 @@ module.connect = function(host, port)
   local uv = vim.loop
   tcp_client = uv.new_tcp()
   local connection = uv.tcp_connect(tcp_client, host, port, function(err)
-    assert(not err, err)
+    if err then
+      print("Could not find an nREPL to connect to on port " .. port)
+      log(err)
+    end
   end)
 
   clone() -- for a seperate eval session id

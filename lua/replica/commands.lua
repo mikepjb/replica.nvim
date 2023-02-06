@@ -11,7 +11,6 @@ end
 module.connect = function(args)
   if args["args"] ~= "" then
     client.connect("127.0.0.1", args["args"])
-    print("Connected to " .. args["args"])
   else
     print("Please provide a port e.g Connect 8765")
   end
