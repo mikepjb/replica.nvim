@@ -102,7 +102,9 @@ module.connect = function(host, port)
     end
   end)
 
-  uv.run()
+  -- TODO according to the docs you need this?
+  -- however it seems to block the UI and also, it seems to work fine without it?
+  -- uv.run()
 end
 
 module.eval = function(code)
