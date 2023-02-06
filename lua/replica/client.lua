@@ -102,8 +102,6 @@ module.disconnect = function()
 end
 
 -- TODO find port based on .nrepl-port?
--- TODO although this is async.. if you do not do anything it takes ages to return the message?
--- I guess this is the nature of async? but it seems to immediately return if I move the cursor.
 module.connect = function(host, port)
   if tcp_client then
     module.disconnect()
@@ -129,10 +127,6 @@ module.connect = function(host, port)
       tcp_client:close()
     end
   end)
-
-  -- TODO according to the docs you need this?
-  -- however it seems to block the UI and also, it seems to work fine without it?
-  -- uv.run()
 end
 
 -- TODO we want to fail gracefully if the user tries to use a command without being connected first
