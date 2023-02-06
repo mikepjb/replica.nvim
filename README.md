@@ -12,6 +12,8 @@ Written in Lua, this project aims to be:
   - [ ] Support for multiple REPLs e.g Clojure & Clojurescript.
     - Test support for both shadow-cljs/figwheel
     - Support for a .dir-locals.el style file for project specific commands like Emacs.
+  - [ ] Require on save?
+    - optional disable?
 
 For lisp editing see `vim-sexp` or the sister project for Replica: `parengage.nvim`
 

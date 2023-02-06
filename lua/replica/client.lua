@@ -74,7 +74,13 @@ read = function(chunk)
         log(vim.inspect(message))
       end
       if message["value"] ~= nil then
+        -- TODO really should be writing to a temp buffer also?
         print(message["value"])
+      end
+
+      if message["err"] ~= nil then
+        -- TODO really should be writing to a temp buffer?
+        print(message["err"])
       end
     end
   end
@@ -112,6 +118,16 @@ end
 
 module.eval = function(code)
   tcp_client:write(encode({id=id, op="eval", code=code, session=eval_session_id}))
+end
+
+module.req = function(ns)
+  -- get text from current buffer
+  -- get current file
+  tcp_client:write(encode({id=id, op="eval", code="(require" .. ns .. ")", session=eval_session_id}))
+end
+
+module.describe = function()
+  tcp_client:write(encode({id=id, op="describe", session=eval_session_id}))
 end
 
 return module

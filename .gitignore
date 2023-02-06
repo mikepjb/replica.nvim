@@ -3,3 +3,4 @@ replica.log
 .clj-kondo
 .cpcache
 .lsp
+tags
