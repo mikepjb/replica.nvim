@@ -1,2 +1,5 @@
 .nrepl-port
 replica.log
+.clj-kondo
+.cpcache
+.lsp

@@ -1,5 +1,5 @@
 repl:
-	clojure -M:nrepl
+	clojure -M:nrepl:figwheel
 
 test:
 	nvim --headless --clean --noplugin \
