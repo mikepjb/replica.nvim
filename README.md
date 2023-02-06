@@ -1,8 +1,10 @@
 ## :fire: replica.nvim
 
-_Name is not set in stone, also considering hearth.nvim/replicant.nvim/<your suggestion>_
+_Name is not set in stone, also considering hearth.nvim/replicant.nvim/other suggestions_
 
 Yet another REPL interaction plugin for neovim.
+
+## :dart: Features
 
 Written in Lua, this project aims to be:
 
