@@ -26,6 +26,7 @@ module.namespace = function(filepath)
   local a, b, _
 
   -- N.B Lua does not implement a POSIX regex engine so we use conditionals to iterate all the possible variations.
+  -- TODO need to pull down project path folders incase the user works with different folder names!
   if find(filepath_no_ext, "src/clj/") then
     a, b, _ = find(filepath_no_ext, "^.*src/clj/", 0)
   elseif find(filepath_no_ext, "src/cljs/") then
