@@ -31,6 +31,12 @@ local log = function(message)
     io.close(log_file)
 end
 
+-- TODO make sure this is used for all relevant fns (everything except connect?)
+pre_execution_checks = function()
+  -- TODO are we in a clj/cljs file & do we have access to the right REPL type?
+  -- TODO do we still have a REPL that we can connect to?
+end
+
 clone = function()
   tcp_client:write(encode({op="clone"}))
 end

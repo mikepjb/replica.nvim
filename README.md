@@ -17,6 +17,20 @@ Written in Lua, this project aims to be:
 
 For lisp editing see `vim-sexp` or the sister project for Replica: `parengage.nvim`
 
+## :grey_question: Why?/FAQs
+
+### Why Neovim?
+
+- Reason #1 is the busted/plenary testing framework which you can use to drive a real neovim instance, to help prevent
+broken plugins.
+- Lua is slight easier to program in than VimL but not by much, we're really here for the testing framework!
+
+### Why another Vim REPL plugin?
+
+- fireplace.vim is an awesome tool, (as is acid/conjure/iced.vim) but fireplace is really nice to use. We want to have
+  a plugin like it, that can also take advantage of a solid testing framework and asynchronous editor architecture that
+  allows us to interact with cider in ways that weren't that practical before (though we don't do that yet!)
+
 ## :mechanical_arm: Installation
 
 You can install this plugin using packer or any of the other great plugin managers, here's an example for packer:

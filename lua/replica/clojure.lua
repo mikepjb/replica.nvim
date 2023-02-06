@@ -3,6 +3,7 @@
 local module = {}
 local gsub, sub, find = string.gsub, string.sub, string.find
 
+-- TODO (java.lang.System/getProperty "java.class.path") should be able to help here.
 module.namespace = function(filepath)
   -- based on filepath
   -- local filetype = vim.bo.filetype
