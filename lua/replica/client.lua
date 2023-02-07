@@ -1,5 +1,6 @@
 local bencode = require("replica.bencode")
 local clojure = require("replica.clojure")
+local log = require("replica.log")
 
 local decode, encode = bencode.decode, bencode.encode
 local insert, concat = table.insert, table.concat
@@ -22,20 +23,6 @@ local main_session_id
 local eval_session_id
 local id = "replica.client"
 local partial_chunks = nil
-
-local log = function(message)
-  if debug then
-    local log_file_path = './replica.log'
-    local log_file = io.open(log_file_path, "a")
-    io.output(log_file)
-    if type(message) == "table" then
-      io.write(vim.inspect(message))
-    else
-      io.write(message.."\n")
-    end
-    io.close(log_file)
-  end
-end
 
 -- TODO make sure this is used for all relevant fns (everything except connect?)
 pre_execution_checks = function()
@@ -62,7 +49,7 @@ read = function(chunk)
     message, _ = decode(concat(partial_chunks) .. chunk)
   end
   if debug then
-    log(vim.inspect(message))
+    log.debug(vim.inspect(message))
   end
 
   if message == nil then
@@ -77,23 +64,23 @@ read = function(chunk)
       if eval_session_id == nil then
         eval_session_id = message["new-session"]
         if debug then
-          log("new eval session id: "..eval_session_id)
+          log.debug("new eval session id: "..eval_session_id)
         end
       else
         main_session_id = message["new-session"]
         if debug then
-          log("new main session id: "..main_session_id)
+          log.debug("new main session id: "..main_session_id)
         end
       end
     end
 
     if message["session"] == eval_session_id then
       if debug_eval_only then
-        log(vim.inspect(message))
+        log.debug(vim.inspect(message))
       end
       if message["value"] ~= nil then
         -- TODO really should be writing to a temp buffer also?
-        log(message["value"])
+        log.debug(message["value"])
         print(message["value"])
       end
 
@@ -103,7 +90,7 @@ read = function(chunk)
       -- end
 
       if message["err"] ~= nil then
-        log(message["err"])
+        log.debug(message["err"])
         vim.schedule(function()
           vim.notify(trim(message["err"]), vim.log.levels.ERROR)
         end)
@@ -120,7 +107,7 @@ module.disconnect = function()
       tcp_client:close()
     end
     tcp_client, main_session_id, eval_session_id = nil, nil, nil
-    log("Client found & disconnected")
+    log.debug("Client found & disconnected")
   else
     print("Could not find a connection to disconnect!")
   end
@@ -137,7 +124,7 @@ module.connect = function(host, port)
   local connection = uv.tcp_connect(tcp_client, host, port, function(err)
     if err then
       print("Could not find an nREPL to connect to on port " .. port)
-      log(err)
+      log.debug(err)
     end
   end)
 
@@ -170,7 +157,7 @@ module.eval = function(code, opts)
     end
   end
 
-  log(message)
+  log.debug(message)
   tcp_client:write(encode(message))
 end
 
@@ -179,7 +166,7 @@ module.req = function(ns, all)
   -- get current file
   local all_flag = all and "-all" or ""
   local code = "(require '" .. ns .. " :reload" .. all_flag .. ")"
-  log("require: " .. code)
+  log.debug("require: " .. code)
   tcp_client:write(encode({ id=id, op="eval", code=code, session=eval_session_id }))
 end
 

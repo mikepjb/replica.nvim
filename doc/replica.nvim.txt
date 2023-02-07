@@ -1,5 +1,8 @@
 *replica.nvim.txt*        For NVIM v0.8.0        Last change: 2023 February 03
 
+Author: Mike Bruce <https://hypalynx.com>
+License: not set, but it will be free (likely same terms as Vim itself?)
+
 ==============================================================================
 
 replica.nvim is a Clojure REPL client plugin, that allows you to interact with
@@ -7,4 +10,9 @@ a clojure REPL from within neovim.
 
 Get connected with `Connect <port>` or `JackIn <port`
 
+                                                 *replica.nvim-:Eval*
+:Eval {code to evaluate}
+:'<,'>Eval (Visual select)
+
 Eval with `Eval (+ 40 2)`
+You can also evaluate by executing Eval after making a visual selection.

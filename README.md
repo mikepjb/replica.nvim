@@ -2,6 +2,8 @@
 
 _Name is not set in stone, also considering hearth.nvim/replicant.nvim/other suggestions_
 
+_Also currently alpha quality, I used this for development and will update this notice when I think it's ready for others to try out for their own workflows._
+
 Yet another REPL interaction plugin for neovim.
 
 ## :dart: Features
