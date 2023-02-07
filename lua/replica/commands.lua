@@ -8,27 +8,37 @@ module.connect = function(args)
   if args["args"] ~= "" then
     client.connect("127.0.0.1", args["args"])
   else
-    print("Please provide a port e.g Connect 8765")
+    if vim.fn.filereadable(".nrepl-port") then
+      local nrepl_port = tonumber(vim.fn.readfile(".nrepl-port")[1])
+      client.connect("127.0.0.1", nrepl_port)
+    else
+      print("Please provide a port e.g Connect 8765")
+    end
   end
 end
 
 module.eval = function(args)
   log.debug(vim.inspect(args))
   if args["args"] ~= "" then -- :Eval <code> style eval, do not include lines
-    client.eval(args["args"], {ns=clojure.namespace()})
+    client.eval(args["args"], { ns=clojure.namespace() })
   else
     local vlines = vim.api.nvim_buf_get_lines(0, args["line1"] - 1, args["line2"], true)
     local vline_string = ""
     for _, v in ipairs(vlines) do
       vline_string = vline_string .. v
     end
-    client.eval(vline_string, {ns=clojure.namespace()})
+    client.eval(vline_string, { ns=clojure.namespace() })
   end
 end
 
 module.eval_last_sexp = function(args)
+  -- TODO not implemented!
   print(vim.inspect(args))
   -- client.eval()
+end
+
+module.doc = function(args)
+  client.doc(clojure.namespace(), vim.fn.expand("<cword>"))
 end
 
 module.req = function(args)
@@ -51,6 +61,7 @@ module.setup = function()
   -- Completed functions
   vim.api.nvim_create_user_command("Connect", module.connect, { nargs='?' })
   vim.api.nvim_create_user_command("JackIn", module.connect, { nargs='?' })
+  vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
   vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?', range=true })
   -- Require! I think the ! actually becomes an arg?
   vim.api.nvim_create_user_command("Require", module.req, { bang=true })
@@ -60,7 +71,7 @@ module.setup = function()
   -- TODO these should be user configurable.
   -- TODO we may want to specify buffers this is applicable to, see on_attach buffer option for lsp config in mikepjb's
   -- init.lua
-  -- local bufopts = { noremap=true, silent=false }
+  local bufopts = { noremap=true, silent=false }
   -- vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)
   -- TODO vim.keymap.set('n', 'cpr', module.eval_last_sexp, bufopts)
 

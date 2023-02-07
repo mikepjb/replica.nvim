@@ -30,10 +30,17 @@ pre_execution_checks = function()
   -- TODO do we still have a REPL that we can connect to?
 end
 
+module.doc = function(ns, sym)
+  -- TODO requires cider-middleware info command
+  tcp_client:write(encode({op="info", ns=ns, sym=sym}))
+end
+
 clone = function()
   tcp_client:write(encode({op="clone"}))
 end
 
+-- TODO should be in a string util module? what else can be grouped with this? I want to try and avoid a "util"
+-- uncategoised module.
 -- multiline errors end with a newline, causing the user the hit enter twice to move on.
 trim = function(s)
   return string.gsub(s, "%s+$", "")
@@ -74,6 +81,17 @@ read = function(chunk)
       end
     end
 
+    -- TODO cider-middleware commands don't all have session input?
+    -- if message["session"] == main_session_id then
+    -- end
+
+    if message["doc"] ~= nil then
+      local doc_message = (message["ns"] .. "/" .. message["name"] .. "\n" .. message["arglists-str"] .. "\n" .. message["doc"] .. "\n" .. message["file"])
+      vim.schedule(function()
+        vim.notify(trim(doc_message), vim.log.levels.INFO)
+      end)
+    end
+
     if message["session"] == eval_session_id then
       if debug_eval_only then
         log.debug(vim.inspect(message))
@@ -83,6 +101,7 @@ read = function(chunk)
         log.debug(message["value"])
         print(message["value"])
       end
+
 
       -- TODO do we really want this?
       -- if message["ex"] ~= nil then -- Clojure(script) eval exception

@@ -8,20 +8,29 @@ Yet another REPL interaction plugin for neovim.
 
 ## :dart: Features
 
-Written in Lua, this project aims to be:
+Written in Lua, this project aims to be simple in terms of features:
 
-- Simple in terms of features:
-  - [X] REPL interaction via neovim's command line
-  - [ ] REPL interaction via the buffer with fireplace-style normal mode keys e.g `cpr` `cpp`
-  - [X] Self-contained package, no external dependencies that make this hard to use
-  - [ ] Omni-completion
-  - [ ] Support for multiple REPLs e.g Clojure & Clojurescript.
-    - Test support for both shadow-cljs/figwheel
-    - Support for a .dir-locals.el style file for project specific commands like Emacs.
-  - [ ] Require on save?
-    - optional disable?
+- [X] REPL interaction via neovim's command line with `:Eval <code>` and `:Eval` with visual mode.
+- [ ] REPL interaction via the buffer with fireplace-style normal mode keys e.g `cpr` `cpp`
+- [X] Self-contained package, no external dependencies that make this hard to use
+- [ ] Find word under cursor with `K` / `:Doc <search_term>`
+- [ ] Omni-completion
+- [ ] Support for multiple REPLs e.g Clojure & Clojurescript.
+  - Test support for both shadow-cljs/figwheel
+  - Support for a .dir-locals.el style file for project specific commands like Emacs.
+- [ ] Require on save
+  - option to disable this
+- [ ] Make sure TODOs/XXX are documented and addressed before v1 release!
+- [ ] when all are addressed, remove tick boxes!
 
 For lisp editing see `vim-sexp` or the sister project for Replica: `parengage.nvim`
+
+To reduce the amount this plugin has to do, we use cider-middleware to support some of our functions (which ones?) _needs expansion_
+
+- LSP is good for doc/K, maybe have simple info and recommend a setup for that instead?
+  - neovim lsp client + clojure-lsp does a good job. but certain things are missing
+    - e.g hovering K on figwheel/stop-all does not show the docs for this
+  - Problem here is that `clojure-lsp` won't pick up dependencies for aliases, so if you include them in say `client` for client stuff then you're stuffed.
 
 ## :grey_question: Why?/FAQs
 

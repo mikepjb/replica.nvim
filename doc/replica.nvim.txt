@@ -8,6 +8,7 @@ License: not set, but it will be free (likely same terms as Vim itself?)
 replica.nvim is a Clojure REPL client plugin, that allows you to interact with
 a clojure REPL from within neovim.
 
+                                                 *replica.nvim-:Connect*
 Get connected with `Connect <port>` or `JackIn <port`
 
                                                  *replica.nvim-:Eval*
@@ -16,3 +17,13 @@ Get connected with `Connect <port>` or `JackIn <port`
 
 Eval with `Eval (+ 40 2)`
 You can also evaluate by executing Eval after making a visual selection.
+
+                                                 *replica.nvim-:Doc*
+:Doc
+Will use the nREPL/cider-middleware to get a definition for the current word
+under your cursor. This is meant to be backup for `clojure-lsp` as it does a
+good job here.
+
+Sometimes you won't have the correct config for `clojure-lsp` and it won't
+be able to find a definition (consult their docs!) and you can instead use
+:Doc to avoid breaking your current workflow.
