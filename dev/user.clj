@@ -14,6 +14,9 @@
 (defn stop-figwheel![]
   (figwheel/stop-all))
 
+(defn test-me []
+  :ok)
+
 (comment
   (start-figwheel!)
   (stop-figwheel!)

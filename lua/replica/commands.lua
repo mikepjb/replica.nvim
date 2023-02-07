@@ -1,4 +1,5 @@
 local client = require("replica.client")
+local clojure = require("replica.clojure")
 
 local module = {}
 
@@ -12,13 +13,21 @@ end
 
 module.eval = function(args)
   if args["args"] ~= "" then
-    client.eval(args["args"])
+    client.eval(args["args"], {ns=clojure.namespace()})
   end
 end
 
+module.eval_last_sexp = function(args)
+  print(vim.inspect(args))
+  -- client.eval()
+end
+
 module.req = function(args)
-  -- TODO get ns! it's not always user you fool.
-  client.req("user")
+  if args["bang"] == true then
+    client.req(clojure.namespace(), true)
+  else
+    client.req(clojure.namespace())
+  end
 end
 
 module.describe = function()
@@ -34,8 +43,18 @@ module.setup = function()
   vim.api.nvim_create_user_command("Connect", module.connect, { nargs='?' })
   vim.api.nvim_create_user_command("JackIn", module.connect, { nargs='?' })
   vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?' })
-  vim.api.nvim_create_user_command("Require", module.req, {})
+  -- Require! I think the ! actually becomes an arg?
+  vim.api.nvim_create_user_command("Require", module.req, { bang=true })
   vim.api.nvim_create_user_command("RDescribe", module.describe, {})
+
+  -- Completed bindings
+  -- TODO these should be user configurable.
+  -- TODO we may want to specify buffers this is applicable to, see on_attach buffer option for lsp config in mikepjb's
+  -- init.lua
+  -- local bufopts = { noremap=true, silent=false }
+  -- vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)
+  -- TODO vim.keymap.set('n', 'cpr', module.eval_last_sexp, bufopts)
+
   -- TODO load file? is the same as require?
   -- it's not the same
   -- vim.api.nvim_create_user_command("RLoadFile", module.describe, {})

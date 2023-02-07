@@ -24,11 +24,17 @@ local id = "replica.client"
 local partial_chunks = nil
 
 local log = function(message)
+  if debug then
     local log_file_path = './replica.log'
     local log_file = io.open(log_file_path, "a")
     io.output(log_file)
-    io.write(message.."\n")
+    if type(message) == "table" then
+      io.write(vim.inspect(message))
+    else
+      io.write(message.."\n")
+    end
     io.close(log_file)
+  end
 end
 
 -- TODO make sure this is used for all relevant fns (everything except connect?)
@@ -39,6 +45,11 @@ end
 
 clone = function()
   tcp_client:write(encode({op="clone"}))
+end
+
+-- multiline errors end with a newline, causing the user the hit enter twice to move on.
+trim = function(s)
+  return string.gsub(s, "%s+$", "")
 end
 
 -- internal function for reading messages that come back from the nREPL.
@@ -82,12 +93,20 @@ read = function(chunk)
       end
       if message["value"] ~= nil then
         -- TODO really should be writing to a temp buffer also?
+        log(message["value"])
         print(message["value"])
       end
 
+      -- TODO do we really want this?
+      -- if message["ex"] ~= nil then -- Clojure(script) eval exception
+      --   print(message["status"] .. "\n" message["ex"]
+      -- end
+
       if message["err"] ~= nil then
-        -- TODO really should be writing to a temp buffer?
-        print(message["err"])
+        log(message["err"])
+        vim.schedule(function()
+          vim.notify(trim(message["err"]), vim.log.levels.ERROR)
+        end)
       end
     end
   end
@@ -142,14 +161,26 @@ end
 --   return tcp_client ~= nil
 -- end
 
-module.eval = function(code)
-  tcp_client:write(encode({id=id, op="eval", code=code, session=eval_session_id}))
+module.eval = function(code, opts)
+  local message = {id=id, op="eval", code=code, session=eval_session_id}
+
+  if opts ~= nil then
+    for k, v in pairs(opts) do
+      message[k] = v
+    end
+  end
+
+  log(message)
+  tcp_client:write(encode(message))
 end
 
-module.req = function(ns)
+module.req = function(ns, all)
   -- get text from current buffer
   -- get current file
-  tcp_client:write(encode({id=id, op="eval", code="(require " .. clojure.namespace() .. ")", session=eval_session_id}))
+  local all_flag = all and "-all" or ""
+  local code = "(require '" .. ns .. " :reload" .. all_flag .. ")"
+  log("require: " .. code)
+  tcp_client:write(encode({ id=id, op="eval", code=code, session=eval_session_id }))
 end
 
 module.describe = function()
