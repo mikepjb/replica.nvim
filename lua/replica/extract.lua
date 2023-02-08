@@ -1,12 +1,17 @@
--- TODO avoid attempting to load treesitter by default, the user may not have/want this setup.
-local ts_utils = require("nvim-treesitter.ts_utils")
-
+local ts_utils = nil
 local module = {}
 local treesitter = {}
 
 treesitter.enabled = function()
-  -- TODO again, we want to know if treesitter is installed otherwise this won't work.
-  return true
+  local noerr, tsu = pcall(function ()
+    return require("nvim-treesitter.ts_utils")
+  end)
+  if noerr then
+    ts_utils = tsu
+    return true
+  else
+    return false
+  end
 end
 
 -- form returns an sexp as a string to send for evaluation (by default the sexp under cursor)
