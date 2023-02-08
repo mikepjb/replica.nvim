@@ -16,7 +16,7 @@ module.form = function() -- TODO take opts?
     -- Range returns 4 integers, start_row, start_column, end_row, end_column
     local srow, scol, erow, ecol = ts_utils.get_node_at_cursor():range()
     local sexp = ""
-    for _, line in ipairs(vim.api.nvim_buf_get_text(0, srow - 1, scol, erow + 1, ecol, {})) do
+    for _, line in ipairs(vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})) do
       sexp = sexp .. line .. "\n"
     end
     return sexp
