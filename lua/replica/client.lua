@@ -24,6 +24,10 @@ local eval_session_id
 local id = "replica.client"
 local partial_chunks = nil
 
+module.connected = function()
+  return tcp_client ~= nil
+end
+
 -- TODO make sure this is used for all relevant fns (everything except connect?)
 pre_execution_checks = function()
   -- TODO are we in a clj/cljs file & do we have access to the right REPL type?
@@ -100,6 +104,13 @@ read = function(chunk)
         -- TODO really should be writing to a temp buffer also?
         log.debug(message["value"])
         print(message["value"])
+      end
+
+      -- For stdout commands such as clojure.core/println
+      if message["out"] ~= nil then
+        -- TODO really should be writing to a temp buffer also?
+        log.debug(message["out"])
+        print(message["out"])
       end
 
 

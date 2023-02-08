@@ -11,7 +11,7 @@
               :open-url false
               :mode :serve}}))
 
-(defn stop-figwheel![]
+(defn stop-figwheel! []
   (figwheel/stop-all))
 
 (defn test-me []

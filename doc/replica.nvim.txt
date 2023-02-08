@@ -10,6 +10,7 @@ a clojure REPL from within neovim.
 
                                                  *replica.nvim-:Connect*
 Get connected with `Connect <port>` or `JackIn <port`
+see also `cpn` which is a shorthand for calling this.
 
                                                  *replica.nvim-:Eval*
 :Eval {code to evaluate}

@@ -1,17 +1,24 @@
 ## :fire: replica.nvim
 
-_Name is not set in stone, also considering hearth.nvim/replicant.nvim/other suggestions_
+_Also currently alpha quality, I use this for development and will update this notice when I think it's ready for others to try out for their own workflows._
 
-_Also currently alpha quality, I used this for development and will update this notice when I think it's ready for others to try out for their own workflows._
-
-Yet another REPL interaction plugin for neovim.
+A REPL interaction tool for neovim.
 
 ## :dart: Features
 
 Written in Lua, this project aims to be simple in terms of features:
 
 - [X] REPL interaction via neovim's command line with `:Eval <code>` and `:Eval` with visual mode.
+- [X] Automatically attempt to connect to an nREPL (based on `.nrepl-port`)
+- [ ] include REPL access
+  - [ ] include REPL history
+  - [ ] readline controls (or at least persist user set bindings) e.g `C-a/e`
 - [ ] REPL interaction via the buffer with fireplace-style normal mode keys e.g `cpr` `cpp`
+  - [X] `cpp` eval/print last or current sexp
+  - [X] `cpn` connect to an nrepl (via `.nrepl-port`)
+  - [ ] `cpr` reload namespace and run tests
+  - [ ] `cpR` hard reload namespace and run tests
+  - [ ] `cm` `cqq` `cqp` `cqc` `<C-R(`?
 - [X] Self-contained package, no external dependencies that make this hard to use
 - [ ] Find word under cursor with `K` / `:Doc <search_term>`
 - [ ] Omni-completion
@@ -22,6 +29,9 @@ Written in Lua, this project aims to be simple in terms of features:
   - option to disable this
 - [ ] Make sure TODOs/XXX are documented and addressed before v1 release!
 - [ ] when all are addressed, remove tick boxes!
+
+Non-Requirements (some are likely going to be put into parengage):
+  - [ ] elastic parens (e.g creating closing parens)
 
 For lisp editing see `vim-sexp` or the sister project for Replica: `parengage.nvim`
 
@@ -74,6 +84,7 @@ Actually not yet, but this is planned!
 
 ## :heart: Special thanks
 
+- Thank you Bozhidar (& other contributors) for making cider
 - Thank you tpope (& other contributors) for making fireplace.vim
 - Thank you octo.nvim for being a great reference for writing lua based neovim plugins!
 - Thank you also to the neovim team for nice documentation, especially on the vim.loop/libuv integration!
