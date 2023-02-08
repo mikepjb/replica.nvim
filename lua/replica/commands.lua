@@ -127,6 +127,8 @@ module.setup = function()
   -- vim.cmd([[command! JackInCljs :CljEval (figwheel.main.api/cljs-repl "dev")<cr>]])
   vim.api.nvim_create_user_command("JackInShadowCljs", function () client.eval("(shadow.cljs.devtools.api/repl :app-dev)") end, {})
   vim.api.nvim_create_user_command("JackInFigwheelCljs", function () client.eval("(figwheel.main.api/cljs-repl \"dev\")") end, {})
+  vim.api.nvim_create_user_command("Piggieback", function() client.piggieback("(figwheel.main.api/cljs-repl \"dev\")") end, {})
+
   -- TODO should be a dwim function that figures out which adaptor you are using and connects.
   -- vim.api.nvim_create_user_command("JackInCljs", function () client.eval("(shadow.cljs.devtools.api/repl :app-dev)") end, {})
   -- vim.cmd([[command! SJackInCljs :CljEval (shadow.cljs.devtools.api/repl :app-dev)<cr>]])

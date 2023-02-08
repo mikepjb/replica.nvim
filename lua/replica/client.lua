@@ -19,10 +19,15 @@ local module = {}
 -- wire. This can happen if you aren't bencoding messages first.
 
 local tcp_client -- TCP client for sending messages
-local main_session_id
-local eval_session_id
+local sessions = {} -- typically we have "main", "eval" and sometimes "cljs" sessions
+local next_session = "main"
 local id = "replica.client"
 local partial_chunks = nil
+
+module.piggieback = function(hook)
+  clone("cljs")
+  module.eval("(cider.piggieback/cljs-repl " .. hook .. ")", {session=sessions["cljs"]})
+end
 
 module.connected = function()
   return tcp_client ~= nil
@@ -39,8 +44,16 @@ module.doc = function(ns, sym)
   tcp_client:write(encode({op="info", ns=ns, sym=sym}))
 end
 
-clone = function()
-  tcp_client:write(encode({op="clone"}))
+clone = function(new_session)
+  next_session = new_session or "main"
+  original_session_id = sessions[next_session]
+
+  -- always branch off the main session
+  if sessions["main"] then
+    tcp_client:write(encode({op="clone", session=sessions["main"]}))
+  else
+    tcp_client:write(encode({op="clone"}))
+  end
 end
 
 -- TODO should be in a string util module? what else can be grouped with this? I want to try and avoid a "util"
@@ -71,23 +84,13 @@ read = function(chunk)
     insert(partial_chunks, chunk)
   else
     partial_chunks = {} -- reset as we have a full parsed message
-    if message["new-session"] ~= nil then
-      if eval_session_id == nil then
-        eval_session_id = message["new-session"]
-        if debug then
-          log.debug("new eval session id: "..eval_session_id)
-        end
-      else
-        main_session_id = message["new-session"]
-        if debug then
-          log.debug("new main session id: "..main_session_id)
-        end
-      end
-    end
 
-    -- TODO cider-middleware commands don't all have session input?
-    -- if message["session"] == main_session_id then
-    -- end
+    if message["new-session"] ~= nil then
+      sessions[next_session] = message["new-session"]
+      log.debug(next_session .. " session id set as: ".. sessions[next_session])
+      log.debug("all sessions:\n" .. vim.inspect(sessions))
+      next_session = "main"
+    end
 
     if message["doc"] ~= nil then
       local doc_message = (message["ns"] .. "/" .. message["name"] .. "\n" .. message["arglists-str"] .. "\n" .. message["doc"] .. "\n" .. message["file"])
@@ -96,7 +99,8 @@ read = function(chunk)
       end)
     end
 
-    if message["session"] == eval_session_id then
+    if message["session"] == sessions["eval"] or
+      message["session"] == sessions["cljs"] then
       if debug_eval_only then
         log.debug(vim.inspect(message))
       end
@@ -136,7 +140,8 @@ module.disconnect = function()
       tcp_client:shutdown()
       tcp_client:close()
     end
-    tcp_client, main_session_id, eval_session_id = nil, nil, nil
+    tcp_client = nil
+    sessions = {}
     log.debug("Client found & disconnected")
   else
     print("Could not find a connection to disconnect!")
@@ -155,11 +160,12 @@ module.connect = function(host, port)
     if err then
       print("Could not find an nREPL to connect to on port " .. port)
       log.debug(err)
+    else
+      clone("main") -- for a new main session id
+      clone("eval") -- for a seperate eval session id
     end
   end)
 
-  clone() -- for a seperate eval session id
-  clone() -- for a new main session id, do this last so it is default for messages we did not initiate
   tcp_client:read_start(function(err, chunk)
     assert(not err, err)
     if chunk then
@@ -179,7 +185,21 @@ end
 -- end
 
 module.eval = function(code, opts)
-  local message = {id=id, op="eval", code=code, session=eval_session_id}
+  local filename = vim.fn.expand('%:t')
+  local session = sessions["eval"]
+
+  if string.find(filename, ".cljs") then
+    if sessions["cljs"] then
+      session = sessions["cljs"]
+    else
+      vim.schedule(function()
+        vim.notify("No Clojurescript REPL available", vim.log.levels.ERROR)
+      end)
+      return
+    end
+  end
+
+  local message = { id=id, op="eval", code=code, session=session }
 
   if opts ~= nil then
     for k, v in pairs(opts) do
@@ -197,11 +217,11 @@ module.req = function(ns, all)
   local all_flag = all and "-all" or ""
   local code = "(require '" .. ns .. " :reload" .. all_flag .. ")"
   log.debug("require: " .. code)
-  tcp_client:write(encode({ id=id, op="eval", code=code, session=eval_session_id }))
+  tcp_client:write(encode({ id=id, op="eval", code=code, session=sessions["eval"] }))
 end
 
 module.describe = function()
-  tcp_client:write(encode({id=id, op="describe", session=eval_session_id}))
+  tcp_client:write(encode({id=id, op="describe", session=sessions["eval"] }))
 end
 
 return module
