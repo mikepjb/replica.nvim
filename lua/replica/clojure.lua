@@ -3,6 +3,16 @@
 local module = {}
 local gsub, sub, find = string.gsub, string.sub, string.find
 
+module.discover_nrepl_port = function()
+    -- TODO filereadable succeeds even if the file is not around, needs fixing.
+    if vim.fn.filereadable(".nrepl-port") then
+      local nrepl_port = tonumber(vim.fn.readfile(".nrepl-port")[1])
+      return nrepl_port
+    else
+      return nil
+    end
+end
+
 -- TODO (java.lang.System/getProperty "java.class.path") should be able to help here.
 module.namespace = function(filepath)
   -- based on filepath

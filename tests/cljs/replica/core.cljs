@@ -5,6 +5,8 @@
 (defn prewritten-function []
   "as it was written before, so shall it be spoken. *thunder*")
 
+
 (comment
+  (js/alert "whatOK?")
   (prewritten-function)
   )

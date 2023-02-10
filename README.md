@@ -77,6 +77,8 @@ Actually not yet, but this is planned!
 
 - replica.nvim does not know if the nREPL process has stopped running, you can continue to issue `:Eval` after
   successfully connecting and there will be no response in the UI.
+- [8th Feb] it's possible that the sessions need to be closed to avoid OOMing? Needs more investigation
+
 ## :test_tube: Testing
 
 `make test` though make sure you have `plenary.nvim` installed next to this project (e.g both in the same src folder

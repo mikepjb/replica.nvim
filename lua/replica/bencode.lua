@@ -123,4 +123,32 @@ module.decode = function(message, index)
   return module.type_decoders[module.detect_type(next_char)](message, index)
 end
 
+-- decoder is a stateful wrapper around the decode function because of the way messages are/can be sent as incomplete
+-- chunks over the network so we need a place to store them.
+module.decoder = function()
+  local buffer = ""
+
+  -- N.B there is an assumption 
+  local decode = function(chunk, acc)
+    buffer = buffer .. chunk
+    local message, index = module.decode(buffer)
+
+    if message then
+      insert(acc, message)
+    end
+
+    if index > len(buffer) then -- there is more than one message in the buffer
+      buffer = sub(buffer, index)
+      decode(buffer, acc)
+    elseif index == len(buffer) then -- we have a complete set of messages
+      buffer = ""
+      return acc
+    else -- there is less than a complete message remaining, keep that in buffer
+      return acc
+    end
+  end
+
+  return decode
+end
+
 return module
