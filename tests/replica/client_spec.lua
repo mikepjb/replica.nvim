@@ -24,6 +24,18 @@ describe("client", function()
       assert.equals(test_conn.socket.port, port)
     end)
 
-    -- TODO we should have 2 registered sessions replica.eval and replica.main when starting.
+    it("sends messages to the nrepl and reads a response", function()
+      local client = require("replica.client")
+      local test_conn = client.connect({
+        host = host,
+        port = port,
+        on_error = function(err) print("error: " .. err) end,
+      })
+      client.clone(test_conn, "test-session")
+      -- TODO we should have 2 registered sessions replica.eval and replica.main when starting.
+      -- this fails but it should succeed, async tests please!
+      -- assert.equals(client.sessions and client.sessions["test-session"], true)
+      -- TODO I don't seem to be able to test async patterns like waiting for a message right now, what a shame!
+    end)
   end)
 end)

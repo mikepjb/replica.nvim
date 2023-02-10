@@ -6,7 +6,6 @@ local log = require("replica.log")
 -- TODO potentially needs a rewrite in socket instead of tcp client?
 
 -- TODO imports from untested
-local decode, encode = bencode.decode, bencode.encode
 local insert, concat, remove = table.insert, table.concat, table.remove
 
 -- new imports
@@ -16,52 +15,84 @@ local decoder, encode = bencode.decoder, bencode.encode
 
 local module = {}
 
-module.send = function(connection, message, callback, prompt)
-  log.debug("send: " .. message)
-  insert(connection.queue, 1, (callback or false))
-  -- TODO handle prompt?
-  connection.socket:write(encode(message))
+module.sessions = {}
+
+module.clone = function(connection, name)
+  local name = name or "main"
+  network.send(connection, {op="clone"}, function(m)
+    if m and m["new-session"] then
+      module.sessions[name] = m["new-session"]
+    end
+  end, false)
 end
 
 module.connect = function(opts)
+  local connection = {
+    decode = decoder(),
+    queue = {},
+    on_error = opts.on_error or function (err)
+      vim.schedule(function()
+        vim.notify(vim.inspect(err), vim.log.levels.ERROR)
+      end)
+    end,
+    on_failure = opts.on_failure or function (err)
+      vim.schedule(function()
+        vim.notify(vim.inspect(err), vim.log.levels.ERROR)
+      end)
+    end,
+    on_success = function ()
+      -- XXX never seen in logs
+      vim.schedule(function()
+        vim.notify("Connected!", vim.log.levels.INFO)
+      end)
+    end
+  }
+
   local handle_message = function(err, chunk)
-    opts.on_error(err)
+    log.debug("received chunk: " .. chunk)
+    if err then
+      connection.on_error(err)
+    end
 
     local messages = connection.decode(chunk)
 
     for _, m in ipairs(messages) do
-      vim.notify(m, vim.log.levels.INFO)
+      log.debug("decoded message: " .. vim.inspect(m))
+
+      local callback = remove(connection.queue)
+      if callback then
+        callback(m)
+      end
     end
   end
 
-  local connection = {
-    decode = decoder(),
-    queue = {},
-    on_failure = function (err)
-      vim.notify(err, vim.log.levels.ERROR)
-    end,
-    on_success = function ()
-      vim.notify("Connected!", vim.log.levels.INFO)
-    end,
-    socket = network.connect(opts.host, opts.port, function (err)
-      -- it is an error to invoke vim.api inside vim.loop callbacks, schedule_wrap defers these calls.
-      vim.schedule_wrap(function (err)
-        if err then
-          connection.on_failure(err)
-        else
-          connection.socket:read_start(function (err, chunk)
-            vim.schedule_wrap(function (err)
-              handle_message(err, chunk)
-            end)
-          end)
-        end
+  connection["socket"] = network.connect(opts.host, opts.port, vim.schedule_wrap(function (err)
+    if err then
+      connection.on_failure(err)
+    else
+      connection.socket.socket:read_start(function (err, chunk)
+        handle_message(err, chunk)
       end)
-      -- callback with nothing
-    end)
-  }
+    end
+  end)
+  )
 
   return connection
 end
+
+module.auto_connect = true -- TODO always true, make confugrable
+
+module.setup = function()
+  if module.auto_connect then
+    local host = "127.0.0.1"
+    local port = clojure.discover_nrepl_port()
+    local connection = module.connect({ host = host, port = port })
+
+    module.clone(connection, "main")
+    module.clone(connection, "eval")
+  end
+end
+
 -- -----------------------------------------------------------
 -- old/untested below
 -- -----------------------------------------------------------

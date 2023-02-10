@@ -127,28 +127,29 @@ end
 -- chunks over the network so we need a place to store them.
 module.decoder = function()
   local buffer = ""
+  local idecode
 
-  -- N.B there is an assumption 
-  local decode = function(chunk, acc)
+  idecode = function(chunk, acc)
+    local acc = acc or {}
     buffer = buffer .. chunk
     local message, index = module.decode(buffer)
 
-    if message then
+    if message then -- you have at another complete message
       insert(acc, message)
-    end
 
-    if index > len(buffer) then -- there is more than one message in the buffer
-      buffer = sub(buffer, index)
-      decode(buffer, acc)
-    elseif index == len(buffer) then -- we have a complete set of messages
-      buffer = ""
-      return acc
-    else -- there is less than a complete message remaining, keep that in buffer
+      if index < len(buffer) then
+        buffer = sub(buffer, index)
+        return idecode("", acc)
+      else -- you have used 100% of the buffer
+        buffer = ""
+        return acc
+      end
+    else -- not enough data in chunk to get a message anymore so return what we have
       return acc
     end
   end
 
-  return decode
+  return idecode
 end
 
 return module

@@ -1,14 +1,24 @@
 local uv = vim.loop
 local insert = table.insert
+local log = require("replica.log")
+local bencode = require("replica.bencode")
+
+local encode = bencode.encode
 
 local module = {}
 
 module.sockets = {}
 
+module.send = function(connection, message, callback, prompt)
+  log.debug("send: " .. vim.inspect(message))
+  insert(connection.queue, 1, (callback or false))
+  -- TODO handle prompt? may be necessary for cljs?
+  -- TODO also socket.socket seems wrong, both are not "sockets"
+  connection.socket.socket:write(encode(message))
+end
+
 module.connect = function(host, port, callback)
   local socket = uv.new_tcp()
-  socket:connect(host, port)
-  -- TODO check host can be connected to?
 
   socket:connect(host, port, callback)
   local socket_info = {
@@ -37,7 +47,7 @@ end
 -- TODO can we test this? maybe after the test suite ran we can check?
 local replica_group = vim.api.nvim_create_augroup("replica", { clear = true })
 vim.api.nvim_create_autocmd("VimLeavePre", {
-  command = "lua require(\"replica.client\").disconnect_all()",
+  command = "lua require(\"replica.network\").disconnect_all()",
   group = replica_group
 })
 

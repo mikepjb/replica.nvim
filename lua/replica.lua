@@ -1,4 +1,5 @@
-local commands = require "replica.commands"
+local commands = require("replica.commands")
+local client = require("replica.client")
 
 local module = {}
 
@@ -8,6 +9,11 @@ module.setup = function(config)
     return
   end
 
+  -- TODO need to not autoconnect for testing or we start spawning lots of clients?
+  -- if autoconnect == nil {
+  -- }
+
+  client.setup()
   commands.setup()
 end
 

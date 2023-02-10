@@ -117,6 +117,23 @@ describe("replica", function()
         {require("replica.bencode").decode("l2:op5:clone4:codel8:(+ 40 2)11:second codeee")},
         {{"op", "clone", "code", {"(+ 40 2)", "second code"}}, 46}
       )
+      assert.are.same(
+        {require("replica.bencode").decode("d11:new-session36:e555524a-a2a7-4adb-b529-a77cf49f00dd7:session36:f953ec1d-11bd-40ef-81f8-6d86725c4a456:statusl4:doneee")},
+        {{["new-session"]= "e555524a-a2a7-4adb-b529-a77cf49f00dd",
+          session= "f953ec1d-11bd-40ef-81f8-6d86725c4a45",
+          status= {"done"}}, 120}
+      )
+    end)
+  end)
+
+  describe("decoder", function()
+    it("can parse multiple messages contained in a single chunk", function()
+      local chunk = "d11:new-session36:95964796-4833-4df3-85d8-366b5314c06c7:session36:a023a4f9-70ee-404f-a0ba-4100fb5646e16:statusl4:doneeed11:new-session36:e555524a-a2a7-4adb-b529-a77cf49f00dd7:session36:f953ec1d-11bd-40ef-81f8-6d86725c4a456:statusl4:doneee"
+      local decode = require("replica.bencode").decoder()
+      local result = decode(chunk)
+      assert.equals(type(result), "table")
+      assert.equals(result[1]["new-session"], "95964796-4833-4df3-85d8-366b5314c06c")
+      assert.equals(result[2]["new-session"], "e555524a-a2a7-4adb-b529-a77cf49f00dd")
     end)
   end)
 end)
