@@ -16,13 +16,8 @@ module.connect = function(args)
   if args ~= nil and args["args"] ~= "" then
     nrepl_port = args["args"]
   else
-    -- TODO filereadable succeeds even if the file is not around, needs fixing.
-    -- if vim.fn.filereadable(".nrepl-port") then
-    -- TODO I don't like that this uses io.open and then vim.fn.readfile seperately..
-    local port_file = io.open(".nrepl-port", r)
-    if port_file ~= nil then
-      nrepl_port = tonumber(vim.fn.readfile(".nrepl-port")[1])
-    else
+    nrepl_port = clojure.discover_nrepl_port()
+    if not nrepl_port then
       print("Please provide a port e.g Connect 8765")
       return
     end
@@ -34,6 +29,20 @@ module.connect = function(args)
   module.clone(connection, "main")
 
   client_instance = connection
+end
+
+module.cljs_connect = function(args)
+  -- TODO we can try to find out if we are in a shadow or a figwheel project?
+  -- for now assume figwheel (future, prefer shadow if see both)
+  -- TODO also allow custom "hook" incase a new tool comes out and we don't support it yet!
+
+  local figwheel = "(figwheel.main.api/cljs-repl \"dev\")"
+  local hook = figwheel -- TODO will expand for shadow/custom from args later
+  -- local cljs_connect_request = "(cider.piggieback/cljs-repl " .. hook .. ")"
+
+  client.eval(module.client_instance, hook, { 
+    session = module.client_instance.sessions.cljs_eval
+  })
 end
 
 find_session = function()
@@ -92,6 +101,20 @@ module.doc = function(args)
     session = module.client_instance.sessions.main, ns = clojure.namespace()
   })
 end
+
+module.req = function(args)
+  local ns = clojure.namespace()
+  local all_flag = ""
+
+  if args["bang"] == true then
+    all_flag = "-all"
+  end
+
+  local code = "(require '" .. ns .. " :reload" .. all_flag .. ")"
+  client.eval(module.client_instance, code, { session = find_session() })
+end
+
+--   vim.api.nvim_create_user_command("Piggieback", function() client.piggieback("(figwheel.main.api/cljs-repl \"dev\")") end, {})
 
 -- module.run_tests = function(args)
 --   print("nope!")
@@ -177,12 +200,16 @@ end
 
 module.setup = function(client_instance)
   module.client_instance = client_instance
+  -- TODO update/write documentation when you are happy with the set of commands
+  vim.api.nvim_create_user_command("Require", module.req, { bang=true })
   vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?', range=true })
   vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
+  vim.api.nvim_create_user_command("CljsConnect", module.cljs_connect, { nargs='?' })
 
   local bufopts = { noremap=true, silent=false }
    vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)
    vim.keymap.set('n', 'cqp', module.quasi_repl, bufopts)
+   vim.keymap.set('n', 'cpc', module.cljs_connect, bufopts) -- yeah? is this a good binding?
 end
 
 return module

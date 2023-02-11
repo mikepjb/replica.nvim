@@ -36,7 +36,17 @@ end
 module.eval = function(connection, code, opts)
   local opts = opts or {}
   network.send(connection, merge({op = "eval", code = code}, opts), function(m)
-    print(m.value)
+    if m.status and m.status ~= { "done" } then
+      log.error(m.status)
+    end
+    if m.err then
+      -- TODO errors passed into with newlines are printed literally \n instead of as real <CR>s
+      log.error(m.err)
+    end
+    if m.out then -- e.g stdout from println or response from figwheel cljs-repl startup
+      log.info(m.out)
+    end
+    log.info(m.value)
   end, false)
 end
 
@@ -56,10 +66,8 @@ module.connect = function(opts)
       end)
     end,
     on_success = function ()
-      -- XXX never seen in logs
-      vim.schedule(function()
-        vim.notify("Connected!", vim.log.levels.INFO)
-      end)
+      -- XXX never seen in logs, are we event calling this?
+      log.info("Connected!")
     end
   }
 
@@ -105,12 +113,16 @@ end
 module.setup = function()
   local host = "127.0.0.1"
   local port = clojure.discover_nrepl_port()
-  local connection = module.connect({ host = host, port = port })
-  module.clone(connection, "cljs_eval")
-  module.clone(connection, "clj_eval")
-  module.clone(connection, "main")
 
-  return connection
+  if port then
+    local connection = module.connect({ host = host, port = port })
+    module.clone(connection, "cljs_eval")
+    module.clone(connection, "clj_eval")
+    module.clone(connection, "main")
+    return connection
+  else
+    return nil
+  end
 end
 
 -- -----------------------------------------------------------

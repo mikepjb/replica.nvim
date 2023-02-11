@@ -7,4 +7,9 @@ module.merge = function(a, b)
   return a
 end
 
+module.trim = function(s)
+  s, _ = string.gsub(s, "%s+$", "")
+  return s
+end
+
 return module

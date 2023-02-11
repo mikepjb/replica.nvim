@@ -1,3 +1,7 @@
+local util = require("replica.util")
+
+local trim = util.trim
+
 local module = {}
 
 module.debug = function(message)
@@ -14,16 +18,18 @@ module.debug = function(message)
   end
 end
 
-module.info = function(message)
+log_message = function(level)
   vim.schedule(function()
-    vim.notify(trim(message), vim.log.levels.INFO)
+    vim.notify(trim(vim.inspect(message)), level)
   end)
 end
 
+module.info = function(message)
+  log_message(vim.log.levels.INFO)
+end
+
 module.error = function(message)
-  vim.schedule(function()
-    vim.notify(trim(message), vim.log.levels.ERROR)
-  end)
+  log_message(vim.log.levels.ERROR)
 end
 
 return module
