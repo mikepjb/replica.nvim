@@ -15,7 +15,7 @@
   (figwheel/stop-all))
 
 (defn test-me []
-  :hello)
+  :hellssssssso)
 
 (comment
   (start-figwheel!)

@@ -13,6 +13,11 @@ module.discover_nrepl_port = function()
     end
 end
 
+module.is_cljs = function(filepath)
+  local filepath = filepath or vim.fn.expand("%:p")
+  return find(filepath, ".cljs$") ~= nil
+end
+
 -- TODO (java.lang.System/getProperty "java.class.path") should be able to help here.
 module.namespace = function(filepath)
   -- TODO handle case where you are doing this is an unnamed buffer?

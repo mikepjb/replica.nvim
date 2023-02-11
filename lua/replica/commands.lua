@@ -10,27 +10,45 @@ local module = {}
 
 module.client_instance = nil
 
--- module.connect = function(args)
---   if args ~= nil and args["args"] ~= "" then
---     client.connect("127.0.0.1", args["args"])
---   else
---     -- TODO filereadable succeeds even if the file is not around, needs fixing.
---     -- if vim.fn.filereadable(".nrepl-port") then
---     -- TODO I don't like that this uses io.open and then vim.fn.readfile seperately..
---     local port_file = io.open(".nrepl-port", r)
---     if port_file ~= nil then
---       local nrepl_port = tonumber(vim.fn.readfile(".nrepl-port")[1])
---       client.connect("127.0.0.1", nrepl_port)
---     else
---       print("Please provide a port e.g Connect 8765")
---     end
---   end
--- end
+-- TODO untested, I always use autoconnect at the moment
+module.connect = function(args)
+  local nrepl_port
+  if args ~= nil and args["args"] ~= "" then
+    nrepl_port = args["args"]
+  else
+    -- TODO filereadable succeeds even if the file is not around, needs fixing.
+    -- if vim.fn.filereadable(".nrepl-port") then
+    -- TODO I don't like that this uses io.open and then vim.fn.readfile seperately..
+    local port_file = io.open(".nrepl-port", r)
+    if port_file ~= nil then
+      nrepl_port = tonumber(vim.fn.readfile(".nrepl-port")[1])
+    else
+      print("Please provide a port e.g Connect 8765")
+      return
+    end
+  end
+
+  local connection = module.connect({ host = host, port = port })
+  module.clone(connection, "cljs_eval")
+  module.clone(connection, "clj_eval")
+  module.clone(connection, "main")
+
+  client_instance = connection
+end
+
+find_session = function()
+  -- TODO also depends if CljEval? and if Piggieback is even connected?
+  if clojure.is_cljs() then
+    return module.client_instance.sessions.cljs_eval
+  else
+    return module.client_instance.sessions.clj_eval
+  end
+end
 
 module.eval = function(args)
   if args["args"] ~= "" then -- :Eval <code> style
     return client.eval(module.client_instance, args["args"], {
-      session = module.client_instance.sessions.clj_eval,
+      session = find_session(),
       ns = clojure.namespace()
     })
   else
@@ -39,34 +57,30 @@ module.eval = function(args)
     for _, v in ipairs(vlines) do
       vline_string = vline_string .. v
     end
+    -- TODO include lines?
     client.eval(module.client_instance, vline_string, {
-      session = module.client_instance.sessions.clj_eval,
+      session = find_session(),
       ns = clojure.namespace()
     })
   end
 end
 
--- module.eval_last_sexp = function(args)
---   local sexp = extract.form()
---   client.eval(sexp, { ns=clojure.namespace() })
--- end
--- 
--- module.quasi_repl = function()
---   local ns = clojure.namespace()
---   -- TODO we use pcall/protected call to "eat" C-c/aborting behaviour by the user but this also seems to result in the
---   -- first stdout message being 'invisible' e.g (println "ok") should return nil, and it does but only after the first
---   -- call.
---   local noerr, i = pcall(function()
---     return vim.fn.input(ns .. "=> ")
---   end)
--- 
---   if noerr then
---     client.eval(i, { ns=ns })
---   end
---   -- local i = vim.fn.input(ns .. "=> ")
---   -- client.eval(i, { ns=ns })
--- end
--- 
+module.eval_last_sexp = function(args)
+  local sexp = extract.form()
+  client.eval(module.client_instance, sexp, { session=find_session(), ns=clojure.namespace() })
+end
+
+module.quasi_repl = function()
+  local ns = clojure.namespace()
+  local noerr, i = pcall(function()
+    return vim.fn.input(ns .. "=> ")
+  end)
+
+  if noerr then
+    client.eval(module.client_instance, i, { session=find_session(), ns=ns })
+  end
+end
+
 -- module.doc = function(args)
 --   client.doc(clojure.namespace(), vim.fn.expand("<cword>"))
 -- end
@@ -156,6 +170,10 @@ end
 module.setup = function(client_instance)
   module.client_instance = client_instance
   vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?', range=true })
+
+  local bufopts = { noremap=true, silent=false }
+   vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)
+   vim.keymap.set('n', 'cqp', module.quasi_repl, bufopts)
 end
 
 return module

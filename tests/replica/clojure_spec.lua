@@ -27,4 +27,17 @@ describe("clojure", function()
       vim.api.nvim_command("bdelete")
     end)
   end)
+
+  describe("identifying clojurescript", function()
+    it("figures out clojurescript files based on extension", function()
+      assert.equals(
+        require("replica.clojure").is_cljs("this_thing.cljs"),
+        true
+      )
+      assert.equals(
+        require("replica.clojure").is_cljs("this_thing.cljx"),
+        false
+      )
+    end)
+  end)
 end)
