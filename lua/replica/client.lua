@@ -2,27 +2,34 @@ local bencode = require("replica.bencode")
 local network = require("replica.network")
 local clojure = require("replica.clojure")
 local log = require("replica.log")
+local util = require("replica.util")
 
 -- TODO potentially needs a rewrite in socket instead of tcp client?
 
 -- TODO imports from untested
-local insert, concat, remove = table.insert, table.concat, table.remove
+local insert, remove = table.insert, table.remove
 
 -- new imports
 local uv = vim.loop
-local insert = table.insert
+local insert, concat = table.insert, table.concat
 local decoder, encode = bencode.decoder, bencode.encode
+local merge = util.merge
 
 local module = {}
-
-module.sessions = {}
 
 module.clone = function(connection, name)
   local name = name or "main"
   network.send(connection, {op="clone"}, function(m)
     if m and m["new-session"] then
-      module.sessions[name] = m["new-session"]
+      connection.sessions[name] = m["new-session"]
     end
+  end, false)
+end
+
+module.eval = function(connection, code, opts)
+  local opts = opts or {}
+  network.send(connection, merge({op = "eval", code = code}, opts), function(m)
+    print(m.value)
   end, false)
 end
 
@@ -30,6 +37,7 @@ module.connect = function(opts)
   local connection = {
     decode = decoder(),
     queue = {},
+    sessions = {},
     on_error = opts.on_error or function (err)
       vim.schedule(function()
         vim.notify(vim.inspect(err), vim.log.levels.ERROR)
@@ -49,19 +57,26 @@ module.connect = function(opts)
   }
 
   local handle_message = function(err, chunk)
-    log.debug("received chunk: " .. chunk)
     if err then
       connection.on_error(err)
+      return
     end
 
-    local messages = connection.decode(chunk)
+    if not chunk then
+      -- we can get empty chunks and no errors if we send empty messages to the nREPL
+      log.debug("received empty chunk, you have")
+    else
+      log.debug("received chunk: " .. chunk)
 
-    for _, m in ipairs(messages) do
-      log.debug("decoded message: " .. vim.inspect(m))
+      local messages = connection.decode(chunk)
 
-      local callback = remove(connection.queue)
-      if callback then
-        callback(m)
+      for _, m in ipairs(messages) do
+        log.debug("decoded message: " .. vim.inspect(m))
+
+        local callback = remove(connection.queue)
+        if callback then
+          callback(m)
+        end
       end
     end
   end
@@ -80,17 +95,15 @@ module.connect = function(opts)
   return connection
 end
 
-module.auto_connect = true -- TODO always true, make confugrable
-
 module.setup = function()
-  if module.auto_connect then
-    local host = "127.0.0.1"
-    local port = clojure.discover_nrepl_port()
-    local connection = module.connect({ host = host, port = port })
+  local host = "127.0.0.1"
+  local port = clojure.discover_nrepl_port()
+  local connection = module.connect({ host = host, port = port })
+  module.clone(connection, "cljs_eval")
+  module.clone(connection, "clj_eval")
+  module.clone(connection, "main")
 
-    module.clone(connection, "main")
-    module.clone(connection, "eval")
-  end
+  return connection
 end
 
 -- -----------------------------------------------------------
@@ -281,37 +294,37 @@ end
 --   return tcp_client ~= nil
 -- end
 
-module.eval = function(code, opts)
-  local filename = vim.fn.expand('%:t')
-  local session = sessions[opts["session"]] or sessions["replica.eval"]
-  -- log.debug("XXX")
-  -- log.debug(session)
-  -- log.debug(opts)
-  -- log.debug("\n")
-
-  if string.find(filename, ".cljs") then
-    -- TODO also need to cover calling :CljEval or :Piggieback in an active cljs buffer
-    if sessions["replica.cljs"] then
-      session = sessions["replica.cljs"]
-    else
-      vim.schedule(function()
-        vim.notify("No Clojurescript REPL available", vim.log.levels.ERROR)
-      end)
-      return
-    end
-  end
-
-  local message = { id=id, op="eval", code=code, session=session }
-
-  if opts ~= nil then
-    for k, v in pairs(opts) do
-      message[k] = v
-    end
-  end
-
-  log.debug(message)
-  tcp_client:write(encode(message))
-end
+-- module.eval = function(code, opts)
+--   local filename = vim.fn.expand('%:t')
+--   local session = sessions[opts["session"]] or sessions["replica.eval"]
+--   -- log.debug("XXX")
+--   -- log.debug(session)
+--   -- log.debug(opts)
+--   -- log.debug("\n")
+-- 
+--   if string.find(filename, ".cljs") then
+--     -- TODO also need to cover calling :CljEval or :Piggieback in an active cljs buffer
+--     if sessions["replica.cljs"] then
+--       session = sessions["replica.cljs"]
+--     else
+--       vim.schedule(function()
+--         vim.notify("No Clojurescript REPL available", vim.log.levels.ERROR)
+--       end)
+--       return
+--     end
+--   end
+-- 
+--   local message = { id=id, op="eval", code=code, session=session }
+-- 
+--   if opts ~= nil then
+--     for k, v in pairs(opts) do
+--       message[k] = v
+--     end
+--   end
+-- 
+--   log.debug(message)
+--   tcp_client:write(encode(message))
+-- end
 
 module.req = function(ns, all)
   -- get text from current buffer

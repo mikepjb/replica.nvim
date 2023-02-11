@@ -15,6 +15,7 @@ end
 
 -- TODO (java.lang.System/getProperty "java.class.path") should be able to help here.
 module.namespace = function(filepath)
+  -- TODO handle case where you are doing this is an unnamed buffer?
   -- based on filepath
   -- local filetype = vim.bo.filetype
   local full_filepath = vim.fn.expand('%:p')

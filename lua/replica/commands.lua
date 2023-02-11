@@ -8,6 +8,8 @@ local log = require("replica.log")
 
 local module = {}
 
+module.client_instance = nil
+
 -- module.connect = function(args)
 --   if args ~= nil and args["args"] ~= "" then
 --     client.connect("127.0.0.1", args["args"])
@@ -24,21 +26,26 @@ local module = {}
 --     end
 --   end
 -- end
--- 
--- module.eval = function(args)
---   log.debug(vim.inspect(args))
---   if args["args"] ~= "" then -- :Eval <code> style eval, do not include lines
---     client.eval(args["args"], { ns=clojure.namespace() })
---   else
---     local vlines = vim.api.nvim_buf_get_lines(0, args["line1"] - 1, args["line2"], true)
---     local vline_string = ""
---     for _, v in ipairs(vlines) do
---       vline_string = vline_string .. v
---     end
---     client.eval(vline_string, { ns=clojure.namespace() })
---   end
--- end
--- 
+
+module.eval = function(args)
+  if args["args"] ~= "" then -- :Eval <code> style
+    return client.eval(module.client_instance, args["args"], {
+      session = module.client_instance.sessions.clj_eval,
+      ns = clojure.namespace()
+    })
+  else
+    local vlines = vim.api.nvim_buf_get_lines(0, args["line1"] - 1, args["line2"], true)
+    local vline_string = ""
+    for _, v in ipairs(vlines) do
+      vline_string = vline_string .. v
+    end
+    client.eval(module.client_instance, vline_string, {
+      session = module.client_instance.sessions.clj_eval,
+      ns = clojure.namespace()
+    })
+  end
+end
+
 -- module.eval_last_sexp = function(args)
 --   local sexp = extract.form()
 --   client.eval(sexp, { ns=clojure.namespace() })
@@ -146,7 +153,9 @@ local module = {}
 --   end
 -- end
 
-module.setup = function()
+module.setup = function(client_instance)
+  module.client_instance = client_instance
+  vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?', range=true })
 end
 
 return module
