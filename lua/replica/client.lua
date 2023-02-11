@@ -26,6 +26,13 @@ module.clone = function(connection, name)
   end, false)
 end
 
+module.doc = function(connection, sym, opts)
+  local opts = opts or {}
+  network.send(connection, merge({op = "info", sym = sym}, opts), function(m)
+    log.info((m.ns .. "/" .. m.name) .. "\n" ..  m["arglists-str"] .. "\n" .. m.doc .. "\n" .. m.file)
+  end, false)
+end
+
 module.eval = function(connection, code, opts)
   local opts = opts or {}
   network.send(connection, merge({op = "eval", code = code}, opts), function(m)
@@ -134,11 +141,6 @@ end
 pre_execution_checks = function()
   -- TODO are we in a clj/cljs file & do we have access to the right REPL type?
   -- TODO do we still have a REPL that we can connect to?
-end
-
--- TODO requires cider-middleware info command
-module.doc = function(ns, sym)
-  tcp_client:write(encode({op="info", ns=ns, sym=sym}))
 end
 
 -- TODO should we always branch off the main session

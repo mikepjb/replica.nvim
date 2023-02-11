@@ -14,6 +14,12 @@ module.debug = function(message)
   end
 end
 
+module.info = function(message)
+  vim.schedule(function()
+    vim.notify(trim(message), vim.log.levels.INFO)
+  end)
+end
+
 module.error = function(message)
   vim.schedule(function()
     vim.notify(trim(message), vim.log.levels.ERROR)

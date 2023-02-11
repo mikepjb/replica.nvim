@@ -81,10 +81,18 @@ module.quasi_repl = function()
   end
 end
 
--- module.doc = function(args)
---   client.doc(clojure.namespace(), vim.fn.expand("<cword>"))
--- end
--- 
+module.doc = function(args)
+  local subject
+  if args ~= nil and args["args"] ~= "" then
+    subject = args["args"]
+  else
+    subject = vim.fn.expand("<cword>")
+  end
+  client.doc(module.client_instance, subject, {
+    session = module.client_instance.sessions.main, ns = clojure.namespace()
+  })
+end
+
 -- module.run_tests = function(args)
 --   print("nope!")
 -- end
@@ -170,6 +178,7 @@ end
 module.setup = function(client_instance)
   module.client_instance = client_instance
   vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?', range=true })
+  vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
 
   local bufopts = { noremap=true, silent=false }
    vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)
