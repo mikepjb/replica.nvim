@@ -9,11 +9,10 @@ local module = {}
 
 module.sockets = {}
 
-module.send = function(connection, message, callback, prompt)
+module.send = function(connection, message, callback)
   log.debug("send: " .. vim.inspect(message))
   insert(connection.queue, 1, (callback or false))
-  -- TODO handle prompt? may be necessary for cljs?
-  -- TODO also socket.socket seems wrong, both are not "sockets"
+  -- insert(connection.queue, 1, (callback or false))
   connection.socket.socket:write(encode(message))
 end
 

@@ -18,18 +18,23 @@ module.debug = function(message)
   end
 end
 
-log_message = function(level)
+log_message = function(message, level)
   vim.schedule(function()
-    vim.notify(trim(vim.inspect(message)), level)
+    if level == vim.log.levels.INFO then
+      print(message)
+      -- vim.notify(trim(vim.inspect(message)), level)
+    else
+      vim.notify(trim(vim.inspect(message)), level)
+    end
   end)
 end
 
 module.info = function(message)
-  log_message(vim.log.levels.INFO)
+  log_message(message, vim.log.levels.INFO)
 end
 
 module.error = function(message)
-  log_message(vim.log.levels.ERROR)
+  log_message(message, vim.log.levels.ERROR)
 end
 
 return module

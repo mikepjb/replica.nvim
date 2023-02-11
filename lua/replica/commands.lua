@@ -106,12 +106,27 @@ module.req = function(args)
   local ns = clojure.namespace()
   local all_flag = ""
 
-  if args["bang"] == true then
+  if args and args["bang"] == true then
     all_flag = "-all"
   end
 
   local code = "(require '" .. ns .. " :reload" .. all_flag .. ")"
-  client.eval(module.client_instance, code, { session = find_session() })
+  client.eval(module.client_instance, code, { session = find_session() }, args.suppress_output)
+end
+
+module.test = function(args)
+  local code = "(clojure.test/run-tests '" .. clojure.namespace() .. ")"
+  client.eval(module.client_instance, code, { session = module.client_instance.sessions.clj_test })
+end
+
+module.req_and_test = function(args)
+  module.req({suppress_output = true})
+  module.test()
+end
+
+module.req_bang_and_test = function(args)
+  module.req({bang = true, suppress_output = true})
+  module.test()
 end
 
 --   vim.api.nvim_create_user_command("Piggieback", function() client.piggieback("(figwheel.main.api/cljs-repl \"dev\")") end, {})
@@ -203,11 +218,14 @@ module.setup = function(client_instance)
   -- TODO update/write documentation when you are happy with the set of commands
   vim.api.nvim_create_user_command("Require", module.req, { bang=true })
   vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?', range=true })
+  vim.api.nvim_create_user_command("Test", module.test, { nargs='?', range=true })
   vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
   vim.api.nvim_create_user_command("CljsConnect", module.cljs_connect, { nargs='?' })
 
   local bufopts = { noremap=true, silent=false }
    vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)
+   vim.keymap.set('n', 'cpr', module.req_and_test, bufopts)
+   vim.keymap.set('n', 'cpR', module.req_bang_and_test, bufopts)
    vim.keymap.set('n', 'cqp', module.quasi_repl, bufopts)
    vim.keymap.set('n', 'cpc', module.cljs_connect, bufopts) -- yeah? is this a good binding?
 end

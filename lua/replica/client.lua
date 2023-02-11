@@ -33,21 +33,23 @@ module.doc = function(connection, sym, opts)
   end, false)
 end
 
-module.eval = function(connection, code, opts)
+module.eval = function(connection, code, opts, suppress_output)
   local opts = opts or {}
   network.send(connection, merge({op = "eval", code = code}, opts), function(m)
-    if m.status and m.status ~= { "done" } then
-      log.error(m.status)
+    log.debug(m)
+    if not suppress_output then
+      if m.status and m.status ~= { "done" } then
+        log.error(m.status)
+      elseif m.err then
+        -- TODO errors passed into with newlines are printed literally \n instead of as real <CR>s
+        log.error(m.err)
+      elseif m.out then -- e.g stdout from println or response from figwheel cljs-repl startup
+        log.info(m.out)
+      elseif m.value then
+        log.info(m.value)
+      end
     end
-    if m.err then
-      -- TODO errors passed into with newlines are printed literally \n instead of as real <CR>s
-      log.error(m.err)
-    end
-    if m.out then -- e.g stdout from println or response from figwheel cljs-repl startup
-      log.info(m.out)
-    end
-    log.info(m.value)
-  end, false)
+  end)
 end
 
 module.connect = function(opts)
@@ -55,21 +57,32 @@ module.connect = function(opts)
     decode = decoder(),
     queue = {},
     sessions = {},
+    -- TODO really each session should have it's own buffer until { "done" } before printing?
+    test_output = {},
     on_error = opts.on_error or function (err)
-      vim.schedule(function()
-        vim.notify(vim.inspect(err), vim.log.levels.ERROR)
-      end)
+      log.error(err)
     end,
     on_failure = opts.on_failure or function (err)
-      vim.schedule(function()
-        vim.notify(vim.inspect(err), vim.log.levels.ERROR)
-      end)
+      log.error(err)
     end,
     on_success = function ()
-      -- XXX never seen in logs, are we event calling this?
-      log.info("Connected!")
+      log.info("Connected to Clojure nREPL on port " .. opts.port)
     end
   }
+
+  -- initially brought in because we recieve multiple messages when issue a test run.
+  -- the alternative here might be to collect the messages into single ones on done status codes.
+  local default_callback = function(m)
+    log.debug(m)
+    if m.err then
+      -- TODO errors passed into with newlines are printed literally \n instead of as real <CR>s
+      log.error(m.err)
+    elseif m.out then -- e.g stdout from println or response from figwheel cljs-repl startup
+      log.info(m.out)
+    elseif m.value then
+      log.info(m.value)
+    end
+  end
 
   local handle_message = function(err, chunk)
     if err then
@@ -79,7 +92,7 @@ module.connect = function(opts)
 
     if not chunk then
       -- we can get empty chunks and no errors if we send empty messages to the nREPL
-      log.debug("received empty chunk, you have")
+      log.debug("received empty chunk")
     else
       log.debug("received chunk: " .. chunk)
 
@@ -89,8 +102,11 @@ module.connect = function(opts)
         log.debug("decoded message: " .. vim.inspect(m))
 
         local callback = remove(connection.queue)
+        log.debug("callback: " .. type(callback))
         if callback then
           callback(m)
+        else
+          default_callback(m)
         end
       end
     end
@@ -100,6 +116,7 @@ module.connect = function(opts)
     if err then
       connection.on_failure(err)
     else
+      connection.on_success()
       connection.socket.socket:read_start(function (err, chunk)
         handle_message(err, chunk)
       end)
@@ -118,6 +135,7 @@ module.setup = function()
     local connection = module.connect({ host = host, port = port })
     module.clone(connection, "cljs_eval")
     module.clone(connection, "clj_eval")
+    module.clone(connection, "clj_test")
     module.clone(connection, "main")
     return connection
   else

@@ -53,6 +53,8 @@ module.namespace = function(filepath)
   -- TODO hardcoding to work with replica.nvim structure
   elseif find(filepath_no_ext, "tests/cljs/") then
     a, b, _ = find(filepath_no_ext, "^.*tests/cljs/", 0)
+  elseif find(filepath_no_ext, "tests/cljtest/") then
+    a, b, _ = find(filepath_no_ext, "^.*tests/cljtest/", 0)
   elseif find(filepath_no_ext, "src/cljc/") then
     a, b, _ = find(filepath_no_ext, "^.*src/cljc/", 0)
   elseif find(filepath_no_ext, "dev/") then
