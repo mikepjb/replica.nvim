@@ -18,6 +18,13 @@ describe("clojure", function()
       )
     end)
 
+    it("picks up the last group of identifiable paths to avoid parent directories with the same name e.g src", function()
+      assert.equals(
+        require("replica.clojure").namespace("~/src/con/test/con/server/store_test.clj"),
+        "con.server.store-test"
+      )
+    end)
+
     it("uses the current full filepath given no arguments", function()
       vim.api.nvim_command("new thing")
       assert.equals(
