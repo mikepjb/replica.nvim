@@ -14,6 +14,7 @@ local uv = vim.loop
 local insert, concat = table.insert, table.concat
 local decoder, encode = bencode.decoder, bencode.encode
 local merge = util.merge
+local gsub = string.gsub
 
 local module = {}
 
@@ -52,11 +53,32 @@ module.eval = function(connection, code, opts, suppress_output)
   end)
 end
 
+module.paths = function(connection)
+  local opts = { session = connection.sessions.main }
+  network.send(connection, merge({op = "eval", code = clojure.paths_query}, opts), function(m)
+    if (m.value == nil) then
+      log.error("something is seriously wrong with your nREPL, try a restart? got nil when asking for source paths")
+    end
+
+    connection.paths = clojure.user_paths(gsub(m.value, '"(.+)"', "%1"))
+  end)
+end
+
+module.pwd = function(connection)
+  local opts = { session = connection.sessions.main }
+  network.send(connection, merge({op = "eval", code = clojure.pwd_query}, opts), function(m)
+    connection.pwd = gsub(m.value, '"(.+)"', "%1")
+  end)
+end
+-- module.eval = function(connection, code, opts, suppress_output)
+
 module.connect = function(opts)
   local connection = {
     decode = decoder(),
     queue = {},
     sessions = {},
+    paths = {},
+    pwd = "",
     -- TODO really each session should have it's own buffer until { "done" } before printing?
     test_output = {},
     on_error = opts.on_error or function (err)
@@ -137,6 +159,8 @@ module.setup = function()
     module.clone(connection, "clj_eval")
     module.clone(connection, "clj_test")
     module.clone(connection, "main")
+    module.paths(connection)
+    module.pwd(connection)
     return connection
   else
     return nil

@@ -54,11 +54,15 @@ find_session = function()
   end
 end
 
+find_paths = function()
+  return module.client_instance.paths
+end
+
 module.eval = function(args)
   if args["args"] ~= "" then -- :Eval <code> style
     return client.eval(module.client_instance, args["args"], {
       session = find_session(),
-      ns = clojure.namespace()
+      ns = clojure.namespace(module.client_instance)
     })
   else
     local vlines = vim.api.nvim_buf_get_lines(0, args["line1"] - 1, args["line2"], true)
@@ -69,18 +73,18 @@ module.eval = function(args)
     -- TODO include lines?
     client.eval(module.client_instance, vline_string, {
       session = find_session(),
-      ns = clojure.namespace()
+      ns = clojure.namespace(module.client_instance)
     })
   end
 end
 
 module.eval_last_sexp = function(args)
   local sexp = extract.form()
-  client.eval(module.client_instance, sexp, { session=find_session(), ns=clojure.namespace() })
+  client.eval(module.client_instance, sexp, { session=find_session(), ns=clojure.namespace(module.client_instance) })
 end
 
 module.quasi_repl = function()
-  local ns = clojure.namespace()
+  local ns = clojure.namespace(module.client_instance)
   local noerr, i = pcall(function()
     return vim.fn.input(ns .. "=> ")
   end)
@@ -98,12 +102,12 @@ module.doc = function(args)
     subject = vim.fn.expand("<cword>")
   end
   client.doc(module.client_instance, subject, {
-    session = module.client_instance.sessions.main, ns = clojure.namespace()
+    session = module.client_instance.sessions.main, ns = clojure.namespace(module.client_instance)
   })
 end
 
 module.req = function(args)
-  local ns = clojure.namespace()
+  local ns = clojure.namespace(module.client_instance)
   local all_flag = ""
 
   if args and args["bang"] == true then
@@ -115,7 +119,7 @@ module.req = function(args)
 end
 
 module.test = function(args)
-  local code = "(clojure.test/run-tests '" .. clojure.namespace() .. ")"
+  local code = "(clojure.test/run-tests '" .. clojure.namespace(module.client_instance) .. ")"
   client.eval(module.client_instance, code, { session = module.client_instance.sessions.clj_test })
 end
 
