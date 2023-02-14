@@ -32,6 +32,10 @@ module.doc = function(connection, sym, opts)
   end, false)
 end
 
+-- used to suppress output
+empty_response = function(m)
+end
+
 -- a private/default function for collecting the values that are returned for a given nREPL op.
 -- A single nREPL op (e.g Eval) can return multiple responses (e.g Test response), so this
 -- function will collect them all and watch for a 'done' status response before sending the
@@ -150,11 +154,9 @@ module.connect = function(opts)
       for _, m in ipairs(messages) do
         log.debug("decoded message: " .. vim.inspect(m))
 
-
-        log.debug("callback: " .. type(callback))
         if m.id then
           local cb = connection.callbacks[m.id]
-          log.debug("callback from callsbacks map: " .. type(cb))
+          log.debug("callback from callbacks map: " .. type(cb))
           if cb then
             cb(m)
           else

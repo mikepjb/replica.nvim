@@ -129,7 +129,7 @@ module.req = function(args)
   end
 
   local code = "(require '" .. ns .. " :reload" .. all_flag .. ")"
-  client.eval(module.client_instance, code, { session = find_session() }, args.suppress_output)
+  client.eval(module.client_instance, code, { session = find_session() }, client.empty_response)
 end
 
 module.test = function(args)
