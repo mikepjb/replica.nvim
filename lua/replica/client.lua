@@ -12,6 +12,10 @@ local gsub = string.gsub
 
 local module = {}
 
+-- TODO generally speaking there are no user alerts for cljs repl missing/no client connected
+-- TODO there is no immediate user feedback e.g (start-figwheel) shows no response, you don't even know you triggered
+-- it tbh.. maybe show user feedback by default but make it configurable?
+
 module.clone = function(connection, name)
   local name = name or "main"
   network.send(connection, {op="clone"}, function(m)

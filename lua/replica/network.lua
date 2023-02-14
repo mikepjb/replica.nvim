@@ -10,8 +10,10 @@ local module = {}
 
 module.sockets = {}
 
+new_id = util.id_gen()
+
 module.send = function(connection, message, callback)
-  local new_id = util.uuid()
+  local new_id = new_id()
   connection.callbacks[new_id] = callback or false
   message["id"] = new_id
   log.debug("send: " .. vim.inspect(message))
