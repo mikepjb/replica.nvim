@@ -16,7 +16,7 @@ describe("client", function()
         port = port,
         on_error = function(err) print("error: " .. err) end,
       })
-      assert.are.same(test_conn.queue, {})
+      assert.are.same(test_conn.callbacks, {})
       assert.equals(type(test_conn.decode), "function")
       assert.equals(type(test_conn.on_failure), "function")
       assert.equals(type(test_conn.on_success), "function")

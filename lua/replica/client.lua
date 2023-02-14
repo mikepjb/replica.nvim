@@ -40,7 +40,8 @@ module.eval = function(connection, code, opts, suppress_output)
     log.debug(m)
     if not suppress_output then
       if m.status and m.status ~= { "done" } then
-        log.error(m.status)
+        -- TODO we don't want to print out status, this is too much info for the user!
+        -- log.info(m.status)
       elseif m.err then
         -- TODO errors passed into with newlines are printed literally \n instead of as real <CR>s
         log.error(m.err)
@@ -53,13 +54,22 @@ module.eval = function(connection, code, opts, suppress_output)
   end)
 end
 
+
+-- TODO this code won't work when sessions aren't syned to callbacks properly
 module.paths = function(connection)
   local opts = { session = connection.sessions.main }
   network.send(connection, merge({op = "eval", code = clojure.paths_query}, opts), function(m)
-    if (m.value == nil) then
-      log.error("something is seriously wrong with your nREPL, try a restart? got nil when asking for source paths")
+    -- TODO we should have a helper/util function to 'close when done' kinda thing
+    if m.status and m.status[1] == "done" then
+      return
+    elseif m["changed-namespaces"] then
+      return
     end
 
+    if (m.value == nil) then
+      log.error("something is seriously wrong with your nREPL, try a restart? got nil when asking for source paths")
+      log.info(vim.inspect(m))
+    end
     connection.paths = clojure.user_paths(gsub(m.value, '"(.+)"', "%1"))
   end)
 end
@@ -67,15 +77,19 @@ end
 module.pwd = function(connection)
   local opts = { session = connection.sessions.main }
   network.send(connection, merge({op = "eval", code = clojure.pwd_query}, opts), function(m)
+    if m.status and m.status[1] == "done" then
+      return
+    elseif m["changed-namespaces"] then
+      return
+    end
     connection.pwd = gsub(m.value, '"(.+)"', "%1")
   end)
 end
--- module.eval = function(connection, code, opts, suppress_output)
 
 module.connect = function(opts)
   local connection = {
     decode = decoder(),
-    queue = {},
+    callbacks = {},
     sessions = {},
     paths = {},
     pwd = "",
@@ -123,10 +137,19 @@ module.connect = function(opts)
       for _, m in ipairs(messages) do
         log.debug("decoded message: " .. vim.inspect(m))
 
-        local callback = remove(connection.queue)
+
         log.debug("callback: " .. type(callback))
-        if callback then
-          callback(m)
+        if m.id then
+          local cb = connection.callbacks[m.id]
+          log.debug("callback from callsbacks map: " .. type(cb))
+          if cb then
+            cb(m)
+            -- TODO maybe we shouldn't remove these (unless the status { "done" } happens/)
+            -- left alone for now but we know this will cause a memory leak/map build-up
+            -- connection.callbacks[m.id] = nil -- remove the callback after use
+          else
+            default_callback(m)
+          end
         else
           default_callback(m)
         end

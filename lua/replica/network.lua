@@ -2,6 +2,7 @@ local uv = vim.loop
 local insert = table.insert
 local log = require("replica.log")
 local bencode = require("replica.bencode")
+local util = require("replica.util")
 
 local encode = bencode.encode
 
@@ -10,9 +11,10 @@ local module = {}
 module.sockets = {}
 
 module.send = function(connection, message, callback)
+  local new_id = util.uuid()
+  connection.callbacks[new_id] = callback or false
+  message["id"] = new_id
   log.debug("send: " .. vim.inspect(message))
-  insert(connection.queue, 1, (callback or false))
-  -- insert(connection.queue, 1, (callback or false))
   connection.socket.socket:write(encode(message))
 end
 

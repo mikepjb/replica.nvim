@@ -217,6 +217,10 @@ end
 --   end
 -- end
 
+module.debug = function(args)
+  print(vim.inspect(module.client_instance))
+end
+
 module.setup = function(client_instance)
   module.client_instance = client_instance
   -- TODO update/write documentation when you are happy with the set of commands
@@ -225,6 +229,8 @@ module.setup = function(client_instance)
   vim.api.nvim_create_user_command("Test", module.test, { nargs='?', range=true })
   vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
   vim.api.nvim_create_user_command("CljsConnect", module.cljs_connect, { nargs='?' })
+  -- TODO Prevent from being mapped outside debug mode?
+  vim.api.nvim_create_user_command("Debug", module.debug, { nargs='?' })
 
   local bufopts = { noremap=true, silent=false }
    vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)
