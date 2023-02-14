@@ -31,6 +31,10 @@ module.discover_nrepl_port = function()
   end
 end
 
+-- TODO project does not need to mention shadow/figwheel directly e.g abstracted common repo
+-- module.discover_cljs_build_tool = function()
+-- end
+
 module.is_cljs = function(filepath)
   local filepath = filepath or vim.fn.expand("%:p")
   return find(filepath, ".cljs$") ~= nil

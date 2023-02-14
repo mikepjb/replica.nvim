@@ -7,7 +7,7 @@ local util = require("replica.util")
 local uv = vim.loop
 local insert, concat = table.insert, table.concat
 local decoder, encode = bencode.decoder, bencode.encode
-local merge = util.merge
+local merge, contains = util.merge, util.contains
 local gsub = string.gsub
 
 local module = {}
@@ -32,24 +32,39 @@ module.doc = function(connection, sym, opts)
   end, false)
 end
 
-module.eval = function(connection, code, opts, suppress_output)
-  local opts = opts or {}
-  network.send(connection, merge({op = "eval", code = code}, opts), function(m)
-    log.debug(m)
-    if not suppress_output then
-      if m.status and m.status ~= { "done" } then
-        -- TODO we don't want to print out status, this is too much info for the user!
-        -- log.info(m.status)
-      elseif m.err then
-        -- TODO errors passed into with newlines are printed literally \n instead of as real <CR>s
-        log.error(m.err)
-      elseif m.out then -- e.g stdout from println or response from figwheel cljs-repl startup
-        log.info(m.out)
-      elseif m.value then
-        log.info(m.value)
+-- a private/default function for collecting the values that are returned for a given nREPL op.
+-- A single nREPL op (e.g Eval) can return multiple responses (e.g Test response), so this
+-- function will collect them all and watch for a 'done' status response before sending the
+-- output to the user.
+buffer_response = function(connection)
+  local buffer = {} -- stored alongside the function inside the connection.callbacks variable.
+  return function(m)
+    log.debug(m) -- always log.debug in an unbuffered way to diagnose errors
+    if m.status and contains(m.status, "done") then
+      -- TODO how do we know what to return e.g out vs value vs etc?
+      log.info(buffer["out"])
+      log.info(buffer["value"])
+      connection.callbacks[m.id] = nil -- remove the function from the callbacks map
+    elseif m.status and contains(m.status, "state") then
+      -- this is what gets used for state updates e.g "changed-namespaces" for now we just log.debug?
+    else
+      if m.value then
+        buffer["value"] = (buffer["value"] or "") .. "\n" .. m.value
+      end
+      if m.out then
+        buffer["out"] = (buffer["out"] or "") .. "\n" .. m.out
       end
     end
-  end)
+  end
+end
+
+module.eval = function(connection, code, opts, callback)
+  local opts = opts or {}
+  network.send(
+    connection,
+    merge({op = "eval", code = code}, opts),
+    callback or buffer_response(connection)
+  )
 end
 
 
@@ -142,9 +157,6 @@ module.connect = function(opts)
           log.debug("callback from callsbacks map: " .. type(cb))
           if cb then
             cb(m)
-            -- TODO maybe we shouldn't remove these (unless the status { "done" } happens/)
-            -- left alone for now but we know this will cause a memory leak/map build-up
-            -- connection.callbacks[m.id] = nil -- remove the callback after use
           else
             default_callback(m)
           end

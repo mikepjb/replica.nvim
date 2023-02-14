@@ -2,9 +2,12 @@ local client = require("replica.client")
 local clojure = require("replica.clojure")
 local extract = require("replica.extract")
 local log = require("replica.log")
+local util = require("replica.util")
 
 -- TODO generally this namespace is becoming the central location for parts of the plugin to work together and should
 -- be better organised.
+
+local split = util.split
 
 local module = {}
 
@@ -36,9 +39,20 @@ module.cljs_connect = function(args)
   -- for now assume figwheel (future, prefer shadow if see both)
   -- TODO also allow custom "hook" incase a new tool comes out and we don't support it yet!
 
-  local figwheel = "(figwheel.main.api/cljs-repl \"dev\")"
-  local hook = figwheel -- TODO will expand for shadow/custom from args later
-  -- local cljs_connect_request = "(cider.piggieback/cljs-repl " .. hook .. ")"
+  local split_args = split(args["args"], "%S+")
+
+  local profile = "\"dev\""
+  local hook_fn = "figwheel.main.api/cljs-repl"
+
+  if split_args[2] then
+    profile = split_args[2]
+  end
+
+  if split_args[1] == "shadow" then
+    hook_fn = "shadow.cljs.devtools.api/repl"
+  end
+
+  local hook = "(" .. hook_fn .. " " .. profile .. ")"
 
   client.eval(module.client_instance, hook, { 
     session = module.client_instance.sessions.cljs_eval

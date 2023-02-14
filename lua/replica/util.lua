@@ -1,6 +1,7 @@
 -- for missing 'core' functions
 
 local random = math.random
+local insert = table.insert
 
 local module = {}
 
@@ -12,6 +13,23 @@ end
 module.trim = function(s)
   s, _ = string.gsub(s, "%s+$", "")
   return s
+end
+
+module.contains = function(t, e)
+  for _, v in ipairs(t) do
+    if v == e then
+      return true
+    end
+  end
+  return false
+end
+
+module.split = function(s, p)
+  local r = {}
+  for i in string.gmatch(s, p) do
+    insert(r, i)
+  end
+  return r
 end
 
 -- TODO not used, remove/ using id_gen instead currently

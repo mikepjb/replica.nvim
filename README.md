@@ -16,11 +16,11 @@ Written in Lua, this project aims to be simple in terms of features:
 - [ ] REPL interaction via the buffer with fireplace-style normal mode keys e.g `cpr` `cpp`
   - [X] `cpp` eval/print last or current sexp
   - [X] `cpn` connect to an nrepl (via `.nrepl-port`)
-  - [ ] `cpr` reload namespace and run tests
-  - [ ] `cpR` hard reload namespace and run tests
+  - [X] `cpr` reload namespace and run tests
+  - [X] `cpR` hard reload namespace and run tests
   - [ ] `cm` `cqq` `cqp` `cqc` `<C-R(`?
 - [X] Self-contained package, no external dependencies that make this hard to use
-- [ ] Find word under cursor with `K` / `:Doc <search_term>`
+- [X] `:Doc <search_term>`
 - [ ] Omni-completion
 - [ ] Support for multiple REPLs e.g Clojure & Clojurescript.
   - Test support for both shadow-cljs/figwheel
