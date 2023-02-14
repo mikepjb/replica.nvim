@@ -86,6 +86,7 @@ Actually not yet, but this is planned!
 
 ## :heart: Special thanks
 
+- Thank you (Dominic/SevereOverfl0w)[https://github.com/SevereOverfl0w] for vim-replant and discussing this project
 - Thank you Bozhidar (& other contributors) for making cider
 - Thank you tpope (& other contributors) for making fireplace.vim
 - Thank you octo.nvim for being a great reference for writing lua based neovim plugins!
