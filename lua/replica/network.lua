@@ -14,7 +14,7 @@ new_id = util.id_gen()
 
 module.send = function(connection, message, callback)
   local new_id = new_id()
-  connection.callbacks[new_id] = callback or false
+  connection.callbacks[new_id] = callback -- or nil if not provided
   message["id"] = new_id
   log.debug("send: " .. vim.inspect(message))
   connection.socket.socket:write(encode(message))
