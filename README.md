@@ -61,7 +61,7 @@ broken plugins.
 You can install this plugin using packer or any of the other great plugin managers, here's an example for packer:
 ```
 require('packer').startup(function(use)
-    use 'mikepjb/replica.nvim'
+  use 'mikepjb/replica.nvim'
 end)
 ```
 
@@ -70,7 +70,11 @@ end)
 Configuration can be done from either `lua` or `viml`:
 
 ```
-Actually not yet, but this is planned!
+require('packer').startup(function(use)
+  use { 'mikepjb/replica.nvim',
+    run = function() require('replica').setup({ auto_connect = true }) end,
+  }
+end)
 ```
 
 ## :beetle: Known Bugs
