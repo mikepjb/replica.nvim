@@ -6,7 +6,7 @@ local insert = table.insert
 local module = {}
 
 module.merge = function(a, b)
-  for k, v in pairs(b) do a[k] = v end
+  for k, v in pairs(b or {}) do a[k] = v end
   return a
 end
 

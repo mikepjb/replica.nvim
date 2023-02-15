@@ -47,7 +47,6 @@ module.disconnect_all = function()
   end
 end
 
--- TODO can we test this? maybe after the test suite ran we can check?
 local replica_group = vim.api.nvim_create_augroup("replica", { clear = true })
 vim.api.nvim_create_autocmd("VimLeavePre", {
   command = "lua require(\"replica.network\").disconnect_all()",

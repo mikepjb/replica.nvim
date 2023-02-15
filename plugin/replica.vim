@@ -1,1 +1,1 @@
-lua require("replica").setup()
+lua require("replica").setup({auto_connect = false})
