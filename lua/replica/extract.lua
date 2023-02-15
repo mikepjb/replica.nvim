@@ -14,6 +14,13 @@ treesitter.enabled = function()
   end
 end
 
+-- Used to help debug and test this function in the wild, we don't currently know how to test this behaviour in spec.
+module.debug_range = function()
+  if treesitter.enabled() then
+    return ts_utils.get_node_at_cursor():range()
+  end
+end
+
 -- form returns an sexp as a string to send for evaluation (by default the sexp under cursor)
 module.form = function() -- TODO take opts?
   if treesitter.enabled() then

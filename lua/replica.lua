@@ -5,6 +5,7 @@ local log = require("replica.log")
 
 local merge = util.merge
 
+
 local module = {}
 
 -- TODO check that connection is available before issuing commands!
@@ -15,7 +16,7 @@ module.setup = function(user_config)
   end
 
   local default_config = {
-    auto_connect = true,
+    auto_connect = false,
     debug = false,
     print_location = "preview" -- choice of preview if too big? preview always? Ex always? buffer?
   }

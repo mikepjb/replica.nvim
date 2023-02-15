@@ -139,6 +139,16 @@ module.debug = function(args)
   print(vim.inspect(module.client_instance))
 end
 
+module.debug_range = function(args)
+  local srow, scol, erow, ecol = extract.debug_range()
+  print(vim.inspect({
+    note = "remember these are 0-indexed and col/row nums are 1-indexed",
+    srow = srow,
+    scol = scol,
+    erow = erow,
+    ecol = ecol}))
+  end
+
 module.setup = function(client_instance, config)
   module.client_instance = client_instance
   -- TODO update/write documentation when you are happy with the set of commands
@@ -148,8 +158,11 @@ module.setup = function(client_instance, config)
   vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
   vim.api.nvim_create_user_command("Connect", module.connect, { nargs='?' })
   vim.api.nvim_create_user_command("CljsConnect", module.cljs_connect, { nargs='?' })
-  -- TODO Prevent from being mapped outside debug mode?
-  vim.api.nvim_create_user_command("Debug", module.debug, { nargs='?' })
+
+  if config.debug then
+    vim.api.nvim_create_user_command("Debug", module.debug, { nargs='?' })
+    vim.api.nvim_create_user_command("DRange", module.debug_range, { nargs='?' })
+  end
 
   local bufopts = { noremap=true, silent=false }
    vim.keymap.set('n', 'cpp', module.eval_last_sexp, bufopts)

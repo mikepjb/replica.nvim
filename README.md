@@ -71,11 +71,15 @@ Configuration can be done from either `lua` or `viml`:
 
 ```
 require('packer').startup(function(use)
-  use { 'mikepjb/replica.nvim',
-    run = function() require('replica').setup({
-      auto_connect = true,
-      debug = true
-    }) end,
+  use {
+    '~/src/replica.nvim',
+    config = function()
+      require("replica").setup({
+        auto_connect = true,
+        debug = false
+      })
+    end,
+    ft = {'clojure'}
   }
 end)
 ```
