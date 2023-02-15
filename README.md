@@ -72,7 +72,10 @@ Configuration can be done from either `lua` or `viml`:
 ```
 require('packer').startup(function(use)
   use { 'mikepjb/replica.nvim',
-    run = function() require('replica').setup({ auto_connect = true }) end,
+    run = function() require('replica').setup({
+      auto_connect = true,
+      debug = true
+    }) end,
   }
 end)
 ```

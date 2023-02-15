@@ -2,7 +2,7 @@ local host, port = "127.0.0.1", require("replica.clojure").discover_nrepl_port()
 
 describe("client", function()
   before_each(function()
-    require("replica").setup()
+    require("replica").setup({auto_connect = false})
   end)
 
   after_each(function()

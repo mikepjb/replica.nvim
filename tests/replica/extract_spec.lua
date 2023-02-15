@@ -1,6 +1,6 @@
 describe("sexp extraction", function()
   before_each(function()
-    require("replica").setup()
+    require("replica").setup({auto_connect = false})
   end)
 
   it("can take a whole sexp from the end of a given form", function()

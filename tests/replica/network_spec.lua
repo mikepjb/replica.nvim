@@ -3,7 +3,7 @@ local network = require("replica.network")
 
 describe("network", function()
   before_each(function()
-    require("replica").setup()
+    require("replica").setup({auto_connect = false})
   end)
 
   after_each(function()

@@ -4,8 +4,10 @@ local trim = util.trim
 
 local module = {}
 
+module.debug_enabled = false
+
 module.debug = function(message)
-  if debug then
+  if module.debug_enabled then
     local log_file_path = './replica.log'
     local log_file = io.open(log_file_path, "a")
     io.output(log_file)
@@ -35,6 +37,10 @@ end
 
 module.error = function(message)
   log_message(message, vim.log.levels.ERROR)
+end
+
+module.setup = function(config)
+  module.debug_enabled = config.debug
 end
 
 return module

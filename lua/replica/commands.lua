@@ -10,7 +10,6 @@ local module = {}
 
 module.client_instance = nil
 
--- TODO untested, I always use autoconnect at the moment
 module.connect = function(args)
   local nrepl_port
   if args ~= nil and args["args"] ~= "" then
@@ -23,19 +22,10 @@ module.connect = function(args)
     end
   end
 
-  local connection = module.connect({ host = host, port = port })
-  module.clone(connection, "cljs_eval")
-  module.clone(connection, "clj_eval")
-  module.clone(connection, "main")
-
-  client_instance = connection
+  module.client_instance = client.setup_connection(nrepl_port)
 end
 
 module.cljs_connect = function(args)
-  -- TODO we can try to find out if we are in a shadow or a figwheel project?
-  -- for now assume figwheel (future, prefer shadow if see both)
-  -- TODO also allow custom "hook" incase a new tool comes out and we don't support it yet!
-
   local split_args = split(args["args"], "%S+")
 
   local profile = "\"dev\""
@@ -45,7 +35,7 @@ module.cljs_connect = function(args)
     profile = split_args[2]
   end
 
-  if split_args[1] == "shadow" then
+  if split_args[1] == "shadow" or split_args[1] == "shadow-cljs" then
     hook_fn = "shadow.cljs.devtools.api/repl"
   end
 
@@ -149,13 +139,14 @@ module.debug = function(args)
   print(vim.inspect(module.client_instance))
 end
 
-module.setup = function(client_instance)
+module.setup = function(client_instance, config)
   module.client_instance = client_instance
   -- TODO update/write documentation when you are happy with the set of commands
   vim.api.nvim_create_user_command("Require", module.req, { bang=true })
   vim.api.nvim_create_user_command("Eval", module.eval, { nargs='?', range=true })
   vim.api.nvim_create_user_command("Test", module.test, { nargs='?', range=true })
   vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
+  vim.api.nvim_create_user_command("Connect", module.connect, { nargs='?' })
   vim.api.nvim_create_user_command("CljsConnect", module.cljs_connect, { nargs='?' })
   -- TODO Prevent from being mapped outside debug mode?
   vim.api.nvim_create_user_command("Debug", module.debug, { nargs='?' })

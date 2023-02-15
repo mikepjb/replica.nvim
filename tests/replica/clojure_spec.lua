@@ -1,6 +1,6 @@
 describe("clojure", function()
   before_each(function()
-    require("replica").setup()
+    require("replica").setup({auto_connect = false})
   end)
 
   describe("namespaces", function()

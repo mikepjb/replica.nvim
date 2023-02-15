@@ -184,9 +184,9 @@ module.connect = function(opts)
   return connection
 end
 
-module.setup = function()
+module.setup_connection = function(port)
   local host = "127.0.0.1"
-  local port = clojure.discover_nrepl_port()
+  local port = port or clojure.discover_nrepl_port()
 
   if port then
     local connection = module.connect({ host = host, port = port })
@@ -199,6 +199,12 @@ module.setup = function()
     return connection
   else
     return nil
+  end
+end
+
+module.setup = function(config)
+  if config.auto_connect then
+    return module.setup_connection(port)
   end
 end
 
