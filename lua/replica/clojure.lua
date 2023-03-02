@@ -41,10 +41,14 @@ module.is_cljs = function(filepath)
 end
 
 module.namespace = function(connection, filepath)
-  local full_filepath = vim.fn.expand('%:p')
+  local full_filepath = filepath or vim.fn.expand('%:p')
 
   if filepath == nil and full_filepath == nil then
     return "user" -- if no filepath given and we're in an empty buffer
+  elseif full_filepath == "" then
+    -- if no filepath given and we're in an empty buffer
+    -- N.B I have sometimes experienced this too when quickly running a quasi-repl after entering a buffer, n=1 though.
+    return "user"
   elseif filepath == nil then
     filepath = full_filepath
   end

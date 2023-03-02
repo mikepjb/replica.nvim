@@ -54,6 +54,13 @@ describe("clojure", function()
       )
       vim.api.nvim_command("bdelete")
     end)
+
+    it("defaults to the user namespace if a blank filepath is given (expected for empty buffers)", function()
+      assert.equals(
+        require("replica.clojure").namespace({paths={"src/clj"}, pwd="~/src/project"}, ""),
+        "user"
+      )
+    end)
   end)
 
   describe("identifying clojurescript", function()
