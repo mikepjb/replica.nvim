@@ -15,6 +15,11 @@ module.trim = function(s)
   return s
 end
 
+module.remove_newlines = function(s)
+  s, _ = string.gsub(s, "\n", "")
+  return s
+end
+
 module.contains = function(t, e)
   for _, v in ipairs(t) do
     if v == e then

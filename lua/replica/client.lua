@@ -48,10 +48,14 @@ buffer_response = function(connection)
       -- TODO how do we know what to return e.g out vs value vs etc?
       log.info(buffer["out"])
       log.info(buffer["value"])
+      log.error(buffer["err"])
       connection.callbacks[m.id] = nil -- remove the function from the callbacks map
     elseif m.status and contains(m.status, "state") then
       -- this is what gets used for state updates e.g "changed-namespaces" for now we just log.debug?
     else
+      if m.err then
+        buffer["err"] = (buffer["err"] or "") .. "\n" .. m.err
+      end
       if m.value then
         buffer["value"] = (buffer["value"] or "") .. "\n" .. m.value
       end

@@ -1,8 +1,11 @@
 local util = require("replica.util")
 
-local trim = util.trim
+local trim, remove_newlines = util.trim, util.remove_newlines
+local insert = table.insert
 
 local module = {}
+
+history = {}
 
 module.debug_enabled = false
 
@@ -21,6 +24,9 @@ module.debug = function(message)
 end
 
 log_message = function(message, level)
+  if message then
+    insert(history, remove_newlines(message))
+  end
   vim.schedule(function()
     if level == vim.log.levels.INFO then
       print(message)
@@ -37,6 +43,16 @@ end
 
 module.error = function(message)
   log_message(message, vim.log.levels.ERROR)
+end
+
+module.history = function()
+  vim.cmd("belowright new history")
+  -- vim.api.nvim_buf_set_name(0, 'history')
+  vim.api.nvim_buf_set_option(0, 'buftype', 'nofile')
+  vim.api.nvim_buf_set_option(0, 'modifiable', true)
+  vim.api.nvim_buf_set_lines(0, 0, -1, true, history)
+  vim.api.nvim_buf_set_option(0, 'modifiable', false)
+  -- print(vim.inspect(history))
 end
 
 module.setup = function(config)

@@ -135,6 +135,10 @@ module.req_bang_and_test = function(args)
   module.test()
 end
 
+module.history = function(args)
+  log.history()
+end
+
 module.debug = function(args)
   print(vim.inspect(module.client_instance))
 end
@@ -158,6 +162,7 @@ module.setup = function(client_instance, config)
   vim.api.nvim_create_user_command("Doc", module.doc, { nargs='?' })
   vim.api.nvim_create_user_command("Connect", module.connect, { nargs='?' })
   vim.api.nvim_create_user_command("CljsConnect", module.cljs_connect, { nargs='?' })
+  vim.api.nvim_create_user_command("History", module.history, { nargs='?' })
 
   if config.debug then
     vim.api.nvim_create_user_command("Debug", module.debug, { nargs='?' })
