@@ -47,12 +47,10 @@ end
 
 module.history = function()
   vim.cmd("belowright new history")
-  -- vim.api.nvim_buf_set_name(0, 'history')
   vim.api.nvim_buf_set_option(0, 'buftype', 'nofile')
   vim.api.nvim_buf_set_option(0, 'modifiable', true)
   vim.api.nvim_buf_set_lines(0, 0, -1, true, history)
   vim.api.nvim_buf_set_option(0, 'modifiable', false)
-  -- print(vim.inspect(history))
 end
 
 module.setup = function(config)
